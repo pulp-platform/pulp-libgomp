@@ -144,10 +144,7 @@ gomp_master_region_start (void *fn, void *data, int specified, gomp_team_t **tea
     new_team->thread_ids[myid] = 0;
     new_team->proc_ids[0] = myid;
 
-    #if defined(PULP3_HWSW_BAR) || defined(PULP3_HW_BAR_ONLY)
-    //qprintf("barrier_id: %d, barrier counter:  %d, team: %d \n",new_team->barrier_id,new_team->barrier_counter,new_team->team,0);
     set_barrier(new_team->barrier_id,new_team->nthreads,new_team->team);
-    #endif
 
     // to make SW barrier work
     for(i=1; i<prv_num_procs; i++)
@@ -171,12 +168,6 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     unsigned /*long long*/ int mask;
     gomp_team_t *new_team, *parent_team;
     
-    #ifdef STATS_ENABLE
-    stop_timer();
-    timers[1] = get_time();
-    start_timer();
-    #endif  
-    
     nprocs = prv_num_procs;
     myid = prv_proc_num;
     
@@ -195,9 +186,6 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     new_team->nthreads = num_threads; // also the master
     
     new_team->team = 0x0;
-    #ifndef PULP3_HW_BAR_ONLY
-    new_team->barrier_counter = num_threads; 
-    #endif
     
     /* Use the global array to fetch idle cores */
     local_id_gen = 1; // '0' is master
@@ -213,9 +201,6 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     //gomp_hal_unlock(&new_team->barrier_lock);
     new_team->critical_lock = 0x0;
     new_team->atomic_lock   = 0x0;
-    #ifndef PULP3_HW_BAR_ONLY
-    new_team->barrier_lock  = 0x0;
-    #endif
     
     /* Init default work share */  
     gomp_work_share_t *root_ws = (gomp_work_share_t *) gomp_new_work_share();
@@ -227,12 +212,6 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     #endif
     
     unsigned int *gtpool = (unsigned int *) (GLOBAL_INFOS_BASE);
-    
-    #ifdef STATS_ENABLE
-    stop_timer();
-    timers[2] = get_time();
-    start_timer();
-    #endif
     
     for( i=1, mask = 2, curr_team_ptr += 4; /* skip p0 (global master) */
          i<nprocs && num_threads;
@@ -260,8 +239,6 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         } // if
     } // for
     
-    #if defined(PULP3_HWSW_BAR) || defined(PULP3_HW_BAR_ONLY)
-    //qprintf("barrier_id: %d\n",new_team->barrier_id,0,0,0);
     if(new_team->barrier_id!=0xFF)
         set_barrier(new_team->barrier_id,new_team->nthreads,new_team->team);
     else
@@ -269,14 +246,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         new_team->barrier_counter = num_threads; 
         new_team->barrier_lock  = 0x0;
     }
-    #endif
 
-    #ifdef STATS_ENABLE
-    stop_timer();
-    timers[3] = get_time();
-    start_timer();
-    #endif
-    
     GLOBAL_INFOS_SIGNAL();
     
     /* Update the parent team field */
@@ -287,12 +257,6 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     new_team->parent = parent_team;
     *((gomp_team_t **) my_team_ptr) = new_team;
     *team = new_team;
-    
-    #ifdef STATS_ENABLE
-    stop_timer();
-    timers[4] = get_time();
-    start_timer();
-    #endif
 }
 
 /* End team and destroy team descriptor */
@@ -301,12 +265,6 @@ gomp_team_end()
 {
     unsigned int i, neg_mask, myid, nthreads, *ids;
     gomp_team_t *the_team;
-    
-    #ifdef STATS_ENABLE
-    stop_timer();
-    timers[11] = get_time();  
-    start_timer();
-    #endif
     
     myid = prv_proc_num;
     
@@ -334,9 +292,4 @@ gomp_team_end()
     
     gomp_free_team(the_team);
     
-    #ifdef STATS_ENABLE
-    stop_timer();
-    timers[12] = get_time();
-    start_timer();
-    #endif
 } // gomp_team_end

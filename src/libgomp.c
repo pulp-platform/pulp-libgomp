@@ -49,18 +49,7 @@ main (int argc, char **argv, char **envp)
     int procs = get_proc_num();
 
     //TODO wrap this ifdef inside a function call
-#if defined(PULP3)
     set_evnt_mask_low(id,1); //configure the event mask
-#elif defined(PULP2)
-    init_buff(id);
-#endif
-    
-    #ifdef STATS_ENABLE
-    if (id == 0){
-        reset_timer();
-        start_timer();
-    }
-    #endif
     
     /* The MASTER executes omp_initenv().. */
     if (id == MASTER_ID)
@@ -93,13 +82,11 @@ omp_initenv(int nprocs, int pid)
     TEAMMEM_FREE_MEM = (void *)((unsigned int) TEAMMEM_ADDR);
     TEAMMEM_FREE_LIST = 0;
 
-    #ifdef PULP3
     unsigned int new_team;
     unsigned int team_id;
     for(new_team = (unsigned int)TEAMMEM_FREE_MEM, team_id = NUM_HW_BARRIER-1; new_team < TEAMMEM_LIMIT; new_team += sizeof(gomp_team_t), --team_id) {
         ((gomp_team_t *)new_team)->barrier_id = team_id;
     }
-    #endif
     
     //Reset team descriptor pool lock
     TEAMMEM_LOCK_SIGNAL();
@@ -158,41 +145,13 @@ omp_SPMD_worker(int myid)
         MSlaveBarrier_Wait_init(nprocs, (unsigned int *) CURR_TEAM(myid)->proc_ids);
         
         _app_main(_argc, _argv, _envp);
-        
-        #ifdef STATS_ENABLE
-        stop_timer();
-        #endif
-        
+
         for(i=1; i<nprocs; i++)
             CURR_TEAM(i) = (gomp_team_t *) OMP_SLAVE_EXIT;
         
         /* We release slaves inside gomp_parallel_end() */
-        #if defined(PULP3)
         MSlaveBarrier_Release(nprocs, (unsigned int *) CURR_TEAM(myid)->proc_ids, CURR_TEAM(myid)->team);
-        #elif defined(PULP2) || defined(PULP3_LEGACY)
-        MSlaveBarrier_Release(nprocs, (unsigned int *) CURR_TEAM(myid)->proc_ids);
-        #endif
         
-        #ifdef STATS_ENABLE
-        _printstrn("");
-        _printdecn("Dummy test:      ", timers[15] - timers[14]);
-        _printstrn("");
-        _printstrn("----------------------------------------------");
-        _printstrn("        Team Creation");
-        _printstrn("----------------------------------------------");
-        _printdecn("Global:          ", timers[7] - timers[0]);
-        _printdecn("Team desc:       ", timers[2] - timers[1]);
-        _printdecn("Fetch team:      ", timers[3] - timers[2]);
-        _printdecn("Setup parent:    ", timers[4] - timers[3]);
-        _printdecn("Release threads: ", timers[6] - timers[5]);
-        _printstrn("");
-        _printstrn("----------------------------------------------");
-        _printstrn("        Team Closing");
-        _printstrn("----------------------------------------------");
-        _printdecn("Global:          ", timers[13] - timers[8]);
-        _printdecn("Gather_slaves:   ", timers[10] - timers[9]);
-        _printdecn("Release team:    ", timers[12] - timers[11]);
-        #endif
         
     } // MASTER
     else
@@ -214,12 +173,8 @@ omp_SPMD_worker(int myid)
                 omp_args = (void*) (&CURR_TEAM(myid)->omp_args);
                 (**omp_task_f)((int) *omp_args);
             } // ! omp_task_f
-
-#if defined(PULP3)
+	    
             MSlaveBarrier_SlaveEnter(myid, (unsigned int ) CURR_TEAM(myid)->proc_ids[0], (unsigned int ) CURR_TEAM(myid)->nthreads, (unsigned int* ) &(CURR_TEAM(myid)->barrier_lock), (unsigned int* ) &(CURR_TEAM(myid)->barrier_counter),(unsigned int ) CURR_TEAM(myid)->barrier_id);
-#elif defined(PULP2) || defined(PULP3_LEGACY)
-            MSlaveBarrier_SlaveEnter(myid, (unsigned int ) CURR_TEAM(myid)->proc_ids[0], (unsigned int ) CURR_TEAM(myid)->nthreads, (unsigned int* ) &(CURR_TEAM(myid)->barrier_lock), (unsigned int* ) &(CURR_TEAM(myid)->barrier_counter));
-#endif
         } // while 
     } // if master/slave
     

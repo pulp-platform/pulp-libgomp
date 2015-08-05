@@ -144,6 +144,11 @@ typedef struct gomp_team_s
     #endif  
 } gomp_team_t;
 
+typedef struct {
+} omp_t;
+
+
+
 /* Statically allocated global variables
  * (to avoid declaring a "real" global variable */
 
@@ -170,7 +175,7 @@ typedef struct gomp_team_s
 #define SHMEM_LOCK_SIGNAL()     gomp_hal_unlock(SHMEM_LOCK)
 
 #define CURR_TEAM_ADDR          (SHMEM_LOCK_ADDR + SHMEM_LOCK_SIZE)
-#define CURR_TEAM_PTR(_id)      ((gomp_team_t **) (CURR_TEAM_ADDR + (_id << 2)))
+#define CURR_TEAM_PTR(_id)      ((gomp_team_t *volatile*) (CURR_TEAM_ADDR + (_id << 2)))
 #define CURR_TEAM(_id)          (*CURR_TEAM_PTR(_id))
 #define CURR_TEAM_SIZE          (SIZEOF_PTR * DEFAULT_MAXPROC)
 
