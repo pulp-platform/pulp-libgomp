@@ -22,7 +22,7 @@ build: $(BUILD_DIR)/libgomp.a
 
 $(BUILD_DIR)/root.o: src/root.c
 	@mkdir -p `dirname $@`	
-	$(CC)  -MMD -MP -MF"$$(@:%.o=%.d)" -MT"$$(@:%.o=%.d)" -DPULP3_HWSW_BAR -DPULP3_HW_BAR_ONLY -O2 -Wextra -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -fdata-sections -ffunction-sections -O3 -DNDEBUG -Iconfig -Iinc -I$(PULP_SDK_HOME)/install/rtl/mia/include -o $@ -c $<
+	$(CC) -O2 -Wextra -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -fdata-sections -ffunction-sections -O3 -DNDEBUG -Iconfig -Iinc -I$(PULP_SDK_HOME)/install/rtl/mia/include -o $@ -c $<
 
 #PULP3_HW_BAR_ONLY
 

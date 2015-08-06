@@ -131,9 +131,6 @@ gomp_master_region_start (void *fn, void *data, int specified, gomp_team_t **tea
     new_team->omp_task_f = (void *)(fn);
     new_team->omp_args = data;
     new_team->nthreads = num_threads; // also the master
-    #ifndef PULP3_HW_BAR_ONLY
-    new_team->barrier_counter = num_threads; 
-    #endif
     
     new_team->team = (1 << num_threads)-1; //originally was 0xFFFF, in order to work well with event also 0xF should be fine;
     
