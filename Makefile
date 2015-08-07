@@ -1,5 +1,8 @@
 BUILD_DIR ?= $(CURDIR)/build
 
+PULP_COMPILERS ?= gcc llvm
+PULP_ARCHIS ?= mia pulp4 pulpevo
+
 # include .d files (if available and only if not doing a clean)
 #ifneq ($(MAKECMDGOALS),clean)
 #ifneq ($(strip $(DEPS)),)
@@ -8,7 +11,7 @@ BUILD_DIR ?= $(CURDIR)/build
 #endif
 
 ifeq '$(OR1K_TOOLCHAIN_TYPE)' 'llvm'
-CC =     clang -target or1kle-elf -mcpu=$(FABRIC_ARCHI)
+CC =     clang -target or1kle-elf -mcpu=$(PULP_ARCHI)
 AR =     or1kle-elf-ar
 else
 CC =     or1kle-elf-gcc
@@ -22,7 +25,7 @@ build: $(BUILD_DIR)/libgomp.a
 
 $(BUILD_DIR)/root.o: src/root.c
 	@mkdir -p `dirname $@`	
-	$(CC) -O2 -Wextra -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -fdata-sections -ffunction-sections -O3 -DNDEBUG -Iconfig -Iinc -I$(PULP_SDK_HOME)/install/rtl/mia/include -o $@ -c $<
+	$(CC) -O2 -Wextra -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -fdata-sections -ffunction-sections -O3 -DNDEBUG -Iconfig -Iinc -I$(PULP_SDK_HOME)/install/include/$(pulpArchi) -o $@ -c $<
 
 #PULP3_HW_BAR_ONLY
 
@@ -43,9 +46,11 @@ sdk.header:
 	cp inc/*.h $(PULP_SDK_HOME)/install/include/omp
 	cp config/*.h $(PULP_SDK_HOME)/install/include/omp	
 
-sdk.build: build
-	for compiler in $(FABRIC_COMPILERS); do \
-		make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$compiler OR1K_TOOLCHAIN_TYPE=$$compiler; if [ $$? -ne 0 ]; then exit 1; fi; \
+sdk.build:
+	for pulpArchi in $(PULP_ARCHIS); do \
+		for pulpCompiler in $(PULP_COMPILERS); do \
+			make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$pulpCompiler/$$pulpArchi pulpArchi=$$pulpArchi pulpCompiler=$$pulpCompiler; if [ $$? -ne 0 ]; then exit 1; fi; \
+		done \
 	done
 	mkdir -p $(PULP_SDK_HOME)/rules
 	cp rules/* $(PULP_SDK_HOME)/rules
