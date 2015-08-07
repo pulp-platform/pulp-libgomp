@@ -31,6 +31,8 @@ $(BUILD_DIR)/libgomp.a: $(BUILD_DIR)/root.o
 
 sdk.clean: clean
 
+sdk.checkout:
+
 sdk.build.comp: build
 	mkdir -p $(PULP_SDK_HOME)/install/or1k/lib/$(OR1K_TOOLCHAIN_TYPE)
 	cp $(BUILD_DIR)/libgomp.a $(PULP_SDK_HOME)/install/or1k/lib/$(OR1K_TOOLCHAIN_TYPE)
