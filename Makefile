@@ -1,7 +1,12 @@
-BUILD_DIR ?= $(CURDIR)/build
+pulpCompiler ?= gcc
+pulpCompilers ?= $(pulpCompiler)
 
-PULP_COMPILERS ?= gcc llvm
-PULP_ARCHIS ?= mia pulp4 pulpevo
+pulpArchi ?= mia
+pulpArchis ?= $(pulpArchi)
+
+GOMP_LIBNAME = libgomp-$(pulpArchi)-$(pulpCompiler).a
+
+BUILD_DIR ?= $(CURDIR)/build
 
 # include .d files (if available and only if not doing a clean)
 #ifneq ($(MAKECMDGOALS),clean)
@@ -10,7 +15,7 @@ PULP_ARCHIS ?= mia pulp4 pulpevo
 #endif
 #endif
 
-ifeq '$(OR1K_TOOLCHAIN_TYPE)' 'llvm'
+ifeq '$(pulpCompiler)' 'llvm'
 CC =     clang -target or1kle-elf -mcpu=$(PULP_ARCHI)
 AR =     or1kle-elf-ar
 else
@@ -21,7 +26,7 @@ endif
 clean:
 	rm -rf $(BUILD_DIR)
 
-build: $(BUILD_DIR)/libgomp.a
+build: $(BUILD_DIR)/$(GOMP_LIBNAME)
 
 $(BUILD_DIR)/root.o: src/root.c
 	@mkdir -p `dirname $@`	
@@ -29,7 +34,7 @@ $(BUILD_DIR)/root.o: src/root.c
 
 #PULP3_HW_BAR_ONLY
 
-$(BUILD_DIR)/libgomp.a: $(BUILD_DIR)/root.o
+$(BUILD_DIR)/$(GOMP_LIBNAME): $(BUILD_DIR)/root.o
 	$(AR) cr $@ $^
 
 sdk.clean: clean
@@ -37,22 +42,20 @@ sdk.clean: clean
 sdk.checkout:
 
 sdk.build.comp: build
-	mkdir -p $(PULP_SDK_HOME)/install/or1k/lib/$(OR1K_TOOLCHAIN_TYPE)
-	cp $(BUILD_DIR)/libgomp.a $(PULP_SDK_HOME)/install/or1k/lib/$(OR1K_TOOLCHAIN_TYPE)
+	mkdir -p $(PULP_SDK_HOME)/install/or1k/lib
+	cp $(BUILD_DIR)/$(GOMP_LIBNAME) $(PULP_SDK_HOME)/install/or1k/lib
 
 sdk.header:
-	mkdir -p $(PULP_SDK_HOME)/install/include/omp
-	cp -r config/pulp3 $(PULP_SDK_HOME)/install/include/omp
-	cp inc/*.h $(PULP_SDK_HOME)/install/include/omp
-	cp config/*.h $(PULP_SDK_HOME)/install/include/omp	
+	mkdir -p $(PULP_SDK_HOME)/install/include/ompBare
+	cp -r config/pulp3 $(PULP_SDK_HOME)/install/include/ompBare
+	cp inc/*.h $(PULP_SDK_HOME)/install/include/ompBare
+	cp config/*.h $(PULP_SDK_HOME)/install/include/ompBare	
 
 sdk.build:
-	for pulpArchi in $(PULP_ARCHIS); do \
-		for pulpCompiler in $(PULP_COMPILERS); do \
-			make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$pulpCompiler/$$pulpArchi pulpArchi=$$pulpArchi pulpCompiler=$$pulpCompiler; if [ $$? -ne 0 ]; then exit 1; fi; \
+	for pulpArchi in $(pulpArchis); do \
+		for pulpCompiler in $(pulpCompilers); do \
+			make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$pulpCompiler-$$pulpArchi pulpArchi=$$pulpArchi pulpCompiler=$$pulpCompiler; if [ $$? -ne 0 ]; then exit 1; fi; \
 		done \
 	done
-	mkdir -p $(PULP_SDK_HOME)/rules
-	cp rules/* $(PULP_SDK_HOME)/rules
 
 .PHONY: build
