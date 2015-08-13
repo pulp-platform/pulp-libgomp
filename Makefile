@@ -30,7 +30,7 @@ build: $(BUILD_DIR)/$(GOMP_LIBNAME)
 
 $(BUILD_DIR)/root.o: src/root.c
 	@mkdir -p `dirname $@`	
-	$(CC) -O2 -Wextra -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -fdata-sections -ffunction-sections -O3 -DNDEBUG -Iconfig -Iinc -I$(PULP_SDK_HOME)/install/include/$(pulpArchi) -o $@ -c $<
+	$(CC) -O2 -Wextra -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -fdata-sections -ffunction-sections -O3 -DNDEBUG -Iconfig -Iinc -I$(PULP_SDK_HOME)/install/include -I$(PULP_SDK_HOME)/install/include/$(pulpArchi) -o $@ -c $<
 
 #PULP3_HW_BAR_ONLY
 

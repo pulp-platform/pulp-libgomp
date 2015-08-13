@@ -22,6 +22,7 @@
 #include "spr-defs.h"
 #include "events_ids.h"
 #include "utils.h"
+#include "string_lib.h"
 #endif
 
 void abort(void) __attribute__((noreturn));
@@ -113,16 +114,16 @@ static inline void wait_event_buff()  {
  * Print functions *
  *************************************************************/
 
-#define _printdecp(a, b) qprintf("%s %d - Processor %d\n", a, b, get_proc_id() - 1,0)
-#define _printdect(a, b) qprintf("%s %d - Time %d\n", a, b, get_time(),0)
-#define _printdecn(a, b) qprintf("%s %d\n", a, b,0,0)
+#define _printdecp(a, b) qprintf("%s %d - Processor %d\n", a, b, get_proc_id() - 1)
+#define _printdect(a, b) qprintf("%s %d - Time %d\n", a, b, get_time())
+#define _printdecn(a, b) qprintf("%s %d\n", a, b)
 
-#define _printhexp(a, b) qprintf("%s %x - Processor %d\n", a, b, get_proc_id() - 1,0)
-#define _printhext(a, b) qprintf("%s %x - Time %d\n", a, b, get_time(),0)
-#define _printhexn(a, b) qprintf("%s %x\n", a, b,0,0)
+#define _printhexp(a, b) qprintf("%s %x - Processor %d\n", a, b, get_proc_id() - 1)
+#define _printhext(a, b) qprintf("%s %x - Time %d\n", a, b, get_time())
+#define _printhexn(a, b) qprintf("%s %x\n", a, b)
 
-#define _printstrp(a) qprintf("%s - Processor %d\n", a, get_proc_id() - 1,0,0)
-#define _printstrt(a) qprintf("%s - Time %d\n", a, get_time(),0,0)
-#define _printstrn(a) qprintf("%s\n", a,0,0,0)
+#define _printstrp(a) qprintf("%s - Processor %d\n", a, get_proc_id() - 1)
+#define _printstrt(a) qprintf("%s - Time %d\n", a, get_time())
+#define _printstrn(a) qprintf("%s\n", a)
 
 #endif // __APPSUPPORT_H__
