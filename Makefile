@@ -4,6 +4,16 @@ pulpCompilers ?= $(pulpCompiler)
 pulpArchi ?= mia
 pulpArchis ?= $(pulpArchi)
 
+ifeq '$(pulpArchi)' 'pulp4'
+pulpCore=or10n4
+else
+ifeq '$(pulpArchi)' 'pulpevo'
+pulpCore=or10n4
+else
+pulpCore=or10n3
+endif
+endif
+
 GOMP_LIBNAME = libgomp-$(pulpArchi)-$(pulpCompiler).a
 
 BUILD_DIR ?= $(CURDIR)/build
@@ -30,7 +40,7 @@ build: $(BUILD_DIR)/$(GOMP_LIBNAME)
 
 $(BUILD_DIR)/root.o: src/root.c
 	@mkdir -p `dirname $@`	
-	$(CC) -O2 -Wextra -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -fdata-sections -ffunction-sections -O3 -DNDEBUG -Iconfig -Iinc -I$(PULP_SDK_HOME)/install/include -I$(PULP_SDK_HOME)/install/include/$(pulpArchi) -o $@ -c $<
+	$(CC) -O2 -Wextra -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -fdata-sections -ffunction-sections -O3 -DNDEBUG -Iconfig -Iinc -I$(PULP_SDK_HOME)/install/include -I$(PULP_SDK_HOME)/install/include/$(pulpArchi) -I$(PULP_SDK_HOME)/install/include/$(pulpCore) -o $@ -c $<
 
 #PULP3_HW_BAR_ONLY
 
