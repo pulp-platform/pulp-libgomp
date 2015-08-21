@@ -59,7 +59,11 @@ GOMP_parallel_end (void)
     *(volatile int*) (WAIT_BARRIER) =  barrier_id;
     *(volatile int*) (CORE_CLKGATE) =  0x1;
     // Flush the pipeline
-    asm volatile ("l.psync\n");
+#ifdef __riscv__
+  asm volatile ("WFI");
+#else
+  asm volatile ("l.psync");
+#endif
     *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
 
     gomp_team_end();

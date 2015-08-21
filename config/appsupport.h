@@ -33,8 +33,7 @@ void abort(void) __attribute__((noreturn));
 static inline unsigned int get_proc_id(){
     #if defined(PULP3)
     int proc_id, value;
-    asm("l.mfspr\t\t%0,%1,0" : "=r" (value) : "r" (SPR_CORE_ID));
-    proc_id = value + 1;
+    proc_id = get_core_id() + 1;
     #elif defined(PULP2) || defined(PULP3_LEGACY)
     int proc_id = get_core_id() + 1;
     #endif
@@ -79,7 +78,11 @@ static inline void wait_barrier_buff(unsigned int barrier_id)  {
     *(volatile int*) (WAIT_BARRIER) =  barrier_id;
     *(volatile int*) (CORE_CLKGATE) =  0x1;
     // Flush the pipeline
-    asm volatile ("l.psync\n");
+#ifdef __riscv__
+  asm volatile ("WFI");
+#else
+  asm volatile ("l.psync");
+#endif
     *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
 }
 
@@ -103,8 +106,12 @@ static inline void get_barrier(int core_id,unsigned int barrier_id)  {
 
 static inline void wait_event_buff()  {
     *(volatile int*) (CORE_CLKGATE) =  0x1;
-    // Flush the pipeline
-    asm volatile ("l.psync\n");
+    // Flush the pipelineY
+#ifdef __riscv__
+  asm volatile ("WFI");
+#else
+  asm volatile ("l.psync");
+#endif
     *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
 }
 

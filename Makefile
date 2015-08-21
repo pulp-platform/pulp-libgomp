@@ -25,12 +25,18 @@ BUILD_DIR ?= $(CURDIR)/build
 #endif
 #endif
 
+ifeq '$(pulpCoreArchi)' 'riscv'
+LD = riscv32-unknown-elf-gcc
+CC = riscv32-unknown-elf-gcc -D__GCC__ -m32 -mtune=pulp3 -march=RV32I -Wa,-march=RV32IM -D__riscv__
+AR = riscv32-unknown-elf-ar
+else
 ifeq '$(pulpCompiler)' 'llvm'
 CC =     clang -target or1kle-elf -mcpu=$(PULP_ARCHI)
 AR =     or1kle-elf-ar
 else
 CC =     or1kle-elf-gcc
 AR =     or1kle-elf-ar
+endif
 endif
 
 clean:
@@ -53,7 +59,7 @@ sdk.checkout:
 
 sdk.build.comp: build
 	mkdir -p $(PULP_SDK_HOME)/install/or1k/lib
-	cp $(BUILD_DIR)/$(GOMP_LIBNAME) $(PULP_SDK_HOME)/install/or1k/lib
+	cp $(BUILD_DIR)/$(GOMP_LIBNAME) $(PULP_SDK_HOME)/install/$(pulpCoreArchi)/lib
 
 sdk.header:
 	mkdir -p $(PULP_SDK_HOME)/install/include/ompBare
@@ -63,8 +69,12 @@ sdk.header:
 
 sdk.build:
 	for pulpArchi in $(pulpArchis); do \
+		make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$pulpCompiler-$$pulpArchi-$$pulpCoreArchi pulpCoreArchi=riscv pulpArchi=$$pulpArchi pulpCompiler=gcc; if [ $$? -ne 0 ]; then exit 1; fi; \
+	done
+
+	for pulpArchi in $(pulpArchis); do \
 		for pulpCompiler in $(pulpCompilers); do \
-			make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$pulpCompiler-$$pulpArchi pulpArchi=$$pulpArchi pulpCompiler=$$pulpCompiler; if [ $$? -ne 0 ]; then exit 1; fi; \
+			make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$pulpCompiler-$$pulpArchi-$$pulpCoreArchi pulpCoreArchi=or10n pulpArchi=$$pulpArchi pulpCompiler=$$pulpCompiler; if [ $$? -ne 0 ]; then exit 1; fi; \
 		done \
 	done
 
