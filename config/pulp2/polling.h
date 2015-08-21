@@ -11,8 +11,8 @@ static inline void SlaveEnter_polling(int myid) {
     volatile _DTYPE g = *flag;
     
     #ifdef DEBUG
-    qprintf("SLAVE  FLAG : %d, ID: %d, ADDR: %x\n",*(SLAVE_FLAG(myid)),myid,(SLAVE_FLAG(myid)));
-    qprintf("MASTER FLAG : %d, ID : %d, ADDR: %x\n",*(MASTER_FLAG(myid)),myid,(MASTER_FLAG(myid)));
+    printf("SLAVE  FLAG : %d, ID: %d, ADDR: %x\n",*(SLAVE_FLAG(myid)),myid,(SLAVE_FLAG(myid)));
+    printf("MASTER FLAG : %d, ID : %d, ADDR: %x\n",*(MASTER_FLAG(myid)),myid,(MASTER_FLAG(myid)));
     #endif
     *(MASTER_FLAG(myid)) = 1;
     while(g == *exit)
@@ -28,7 +28,7 @@ static inline void Wait_polling(int num_threads, unsigned int *local_slave_ids) 
         curr_proc_id = local_slave_ids[i];
         
         #ifdef DEBUG
-        qprintf("CURR PROC ID: %d, MASTER FLAG : %d, ADDR: %x, NUM_THREADS: %d\n",curr_proc_id,*(MASTER_FLAG(curr_proc_id)),(MASTER_FLAG(curr_proc_id)), num_threads );
+        printf("CURR PROC ID: %d, MASTER FLAG : %d, ADDR: %x, NUM_THREADS: %d\n",curr_proc_id,*(MASTER_FLAG(curr_proc_id)),(MASTER_FLAG(curr_proc_id)), num_threads );
         #endif
         
         while(!(*(MASTER_FLAG(curr_proc_id))))
@@ -48,7 +48,7 @@ void Release_polling(int num_threads, unsigned int *local_slave_ids){
         curr_proc_id = local_slave_ids[i];
         
         #ifdef DEBUG
-        qprintf("CURR PROC ID: %d, SLAVE FLAG : %d, ADDR: %x, NUM_THREADS: %d\n",*(MASTER_FLAG(curr_proc_id)),curr_proc_id,(MASTER_FLAG(curr_proc_id)), num_threads );
+        printf("CURR PROC ID: %d, SLAVE FLAG : %d, ADDR: %x, NUM_THREADS: %d\n",*(MASTER_FLAG(curr_proc_id)),curr_proc_id,(MASTER_FLAG(curr_proc_id)), num_threads );
         #endif
         
         volatile _DTYPE *exit = (volatile _DTYPE *) SLAVE_FLAG(curr_proc_id);

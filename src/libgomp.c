@@ -103,19 +103,19 @@ omp_initenv(int nprocs, int pid)
     _printstrn ("----------- OpenMP Environment ------------");
     _printstrn ("------------- Address check ---------------");
     _printstrn ("");
-    qprintf("BARRIER_BASE      %x\n", BARRIER_BASE);   
-    qprintf("GLOBAL_INFOS_BASE %x\n", GLOBAL_INFOS_BASE);
-    qprintf("GLOBAL_INFOS_LOCK %x\n", GLOBAL_LOCK);
-    qprintf("SHMEM_NEXT        %x\n", SHMEM_NEXT);
-    qprintf("SHMEM_LOCK        %x\n", SHMEM_LOCK);
-    qprintf("CURR_TEAM_ADDR    %x\n", CURR_TEAM_ADDR);
+    printf("BARRIER_BASE      %x\n", BARRIER_BASE);   
+    printf("GLOBAL_INFOS_BASE %x\n", GLOBAL_INFOS_BASE);
+    printf("GLOBAL_INFOS_LOCK %x\n", GLOBAL_LOCK);
+    printf("SHMEM_NEXT        %x\n", SHMEM_NEXT);
+    printf("SHMEM_LOCK        %x\n", SHMEM_LOCK);
+    printf("CURR_TEAM_ADDR    %x\n", CURR_TEAM_ADDR);
     #ifndef __NO_OMP_PREALLOC__
-    qprintf("TEAMMEM           %x\n", TEAMMEM_ADDR);
-    qprintf("TEAMMEM_LOCK      %x\n", TEAMMEM_LOCK);
-    qprintf("TEAMMEM_LIMIT     %x\n", TEAMMEM_LIMIT);
-    qprintf("WSMEM             %x\n", WSMEM_ADDR);
-    qprintf("WSMEM_LOCK        %x\n", WSMEM_LOCK);
-    qprintf("WSMEM_LIMIT       %x\n", WSMEM_LIMIT);
+    printf("TEAMMEM           %x\n", TEAMMEM_ADDR);
+    printf("TEAMMEM_LOCK      %x\n", TEAMMEM_LOCK);
+    printf("TEAMMEM_LIMIT     %x\n", TEAMMEM_LIMIT);
+    printf("WSMEM             %x\n", WSMEM_ADDR);
+    printf("WSMEM_LOCK        %x\n", WSMEM_LOCK);
+    printf("WSMEM_LIMIT       %x\n", WSMEM_LIMIT);
     #endif
     #endif
     

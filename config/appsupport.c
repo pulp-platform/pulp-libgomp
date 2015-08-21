@@ -9,7 +9,7 @@
 #include "events.h"
 
 void  abort() {
-  qprintf("ERROR - Aborting\n");
+  printf("ERROR - Aborting\n");
   //eoc(0);
   while(1);
 }

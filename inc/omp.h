@@ -55,7 +55,7 @@ extern int omp_get_wtick(void);
 
 #include "appsupport.h"
 #define MAIN _app_main
-#define PRINTF qprintf
+#define PRINTF printf
 #define START_TIMER start_timer
 #define RESET_TIMER reset_timer
 #define STOP_TIMER stop_timer

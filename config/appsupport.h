@@ -121,16 +121,16 @@ static inline void wait_event_buff()  {
  * Print functions *
  *************************************************************/
 
-#define _printdecp(a, b) qprintf("%s %d - Processor %d\n", a, b, get_proc_id() - 1)
-#define _printdect(a, b) qprintf("%s %d - Time %d\n", a, b, get_time())
-#define _printdecn(a, b) qprintf("%s %d\n", a, b)
+#define _printdecp(a, b) printf("%s %d - Processor %d\n", a, b, get_proc_id() - 1)
+#define _printdect(a, b) printf("%s %d - Time %d\n", a, b, get_time())
+#define _printdecn(a, b) printf("%s %d\n", a, b)
 
-#define _printhexp(a, b) qprintf("%s %x - Processor %d\n", a, b, get_proc_id() - 1)
-#define _printhext(a, b) qprintf("%s %x - Time %d\n", a, b, get_time())
-#define _printhexn(a, b) qprintf("%s %x\n", a, b)
+#define _printhexp(a, b) printf("%s %x - Processor %d\n", a, b, get_proc_id() - 1)
+#define _printhext(a, b) printf("%s %x - Time %d\n", a, b, get_time())
+#define _printhexn(a, b) printf("%s %x\n", a, b)
 
-#define _printstrp(a) qprintf("%s - Processor %d\n", a, get_proc_id() - 1)
-#define _printstrt(a) qprintf("%s - Time %d\n", a, get_time())
-#define _printstrn(a) qprintf("%s\n", a)
+#define _printstrp(a) printf("%s - Processor %d\n", a, get_proc_id() - 1)
+#define _printstrt(a) printf("%s - Time %d\n", a, get_time())
+#define _printstrn(a) printf("%s\n", a)
 
 #endif // __APPSUPPORT_H__

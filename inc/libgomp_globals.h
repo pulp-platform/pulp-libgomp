@@ -36,7 +36,7 @@
 #define NUM_HW_BARRIER 6
 #endif
 
-#define GOMP_WARN_NOT_SUPPORTED(what) qprintf("[libGOMP] " what " is not supported yet.");
+#define GOMP_WARN_NOT_SUPPORTED(what) printf("[libGOMP] " what " is not supported yet.");
 
 /* Platform Information */
 #define prv_proc_num (get_proc_id() - 1)
