@@ -150,9 +150,8 @@ omp_SPMD_worker(int myid)
             CURR_TEAM(i) = (gomp_team_t *) OMP_SLAVE_EXIT;
         
         /* We release slaves inside gomp_parallel_end() */
-        MSlaveBarrier_Release(nprocs, (unsigned int *) CURR_TEAM(myid)->proc_ids, CURR_TEAM(myid)->team);
-        
-        
+        MSlaveBarrier_Release(nprocs, (unsigned int *) CURR_TEAM(myid)->proc_ids, (1<<nprocs)-1);
+
     } // MASTER
     else
     {
