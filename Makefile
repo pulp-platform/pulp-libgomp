@@ -66,6 +66,8 @@ sdk.header:
 	cp -r config/pulp3 $(PULP_SDK_HOME)/install/include/ompBare
 	cp inc/*.h $(PULP_SDK_HOME)/install/include/ompBare
 	cp config/*.h $(PULP_SDK_HOME)/install/include/ompBare	
+	mkdir -p $(PULP_SDK_HOME)/install/include/ompNative
+	cp inc/ompNative.h $(PULP_SDK_HOME)/install/include/ompNative/omp.h
 
 sdk.build:
 	for pulpArchi in $(pulpArchis); do \

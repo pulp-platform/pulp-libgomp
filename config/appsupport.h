@@ -31,6 +31,9 @@ void abort(void) __attribute__((noreturn));
  * Memory-mapped support functions *
  ***********************************/
 static inline unsigned int get_proc_id(){
+#ifdef NATIVE
+  return 0;
+#else
     #if defined(PULP3)
     int proc_id, value;
     proc_id = get_core_id() + 1;
@@ -39,6 +42,7 @@ static inline unsigned int get_proc_id(){
     #endif
     
     return (unsigned long int) proc_id;
+#endif
 }
 
 static inline unsigned int get_proc_num(){
