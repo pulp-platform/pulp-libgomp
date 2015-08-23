@@ -69,7 +69,7 @@ sdk.header:
 
 sdk.build:
 	for pulpArchi in $(pulpArchis); do \
-		make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$pulpCompiler-$$pulpArchi-riscv pulpCoreArchi=riscv pulpArchi=$$pulpArchi pulpCompiler=gcc; if [ $$? -ne 0 ]; then exit 1; fi; \
+		make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/gcc-$$pulpArchi-riscv pulpCoreArchi=riscv pulpArchi=$$pulpArchi pulpCompiler=gcc; if [ $$? -ne 0 ]; then exit 1; fi; \
 	done
 
 	for pulpArchi in $(pulpArchis); do \
