@@ -181,11 +181,11 @@ omp_SPMD_worker(int myid)
             /* Have work! */
             else
             {
-	        pulp_trace(get_core_id(), TRACE_OMP_PARALLEL_ENTER);
+	        pulp_trace(TRACE_OMP_PARALLEL_ENTER);
                 omp_task_f = (void*) (&CURR_TEAM(myid)->omp_task_f);
                 omp_args = (void*) (&CURR_TEAM(myid)->omp_args);
                 (**omp_task_f)((int) *omp_args);
-		pulp_trace(get_core_id(), TRACE_OMP_PARALLEL_EXIT);
+		pulp_trace(TRACE_OMP_PARALLEL_EXIT);
             } // ! omp_task_f
 	    
             MSlaveBarrier_SlaveEnter(myid, (unsigned int ) CURR_TEAM(myid)->proc_ids[0], (unsigned int ) CURR_TEAM(myid)->nthreads, (unsigned int* ) &(CURR_TEAM(myid)->barrier_lock), (unsigned int* ) &(CURR_TEAM(myid)->barrier_counter),(unsigned int ) CURR_TEAM(myid)->barrier_id);

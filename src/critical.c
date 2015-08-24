@@ -47,7 +47,7 @@ GOMP_atomic_end (void)
 void
 GOMP_critical_start (void)
 {
-    pulp_trace(get_core_id(), TRACE_OMP_CRITICAL_ENTER);
+    pulp_trace(TRACE_OMP_CRITICAL_ENTER);
     unsigned int myid = prv_proc_num;
     gomp_hal_lock(&(CURR_TEAM(myid)->critical_lock));
 }
@@ -56,7 +56,7 @@ void
 GOMP_critical_end (void)
 {
     unsigned int myid = prv_proc_num;
-    pulp_trace(get_core_id(), TRACE_OMP_CRITICAL_EXIT);
+    pulp_trace(TRACE_OMP_CRITICAL_EXIT);
     gomp_hal_unlock(&(CURR_TEAM(myid)->critical_lock));
 }
 

@@ -34,8 +34,8 @@
 void
 GOMP_barrier()
 {
-    pulp_trace(get_core_id(), TRACE_OMP_BARRIER_ENTER);
+    pulp_trace(TRACE_OMP_BARRIER_ENTER);
     gomp_hal_barrier();
-    pulp_trace(get_core_id(), TRACE_OMP_BARRIER_EXIT);
+    pulp_trace(TRACE_OMP_BARRIER_EXIT);
  
 }

@@ -70,46 +70,22 @@ GOMP_parallel_end (void)
     gomp_team_end();
 }
 
-static inline void perfDump(int event)
-{
-#ifdef PROFILE0
-  unsigned int coreId = get_core_id();
-  pulp_trace(coreId, event);
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_CYCLES));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_INSTR));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_LOAD));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_JUMP));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_IMISS));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_BRANCH));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_BRANCH_CYC));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_LD));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_ST));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_LD_EXT));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_ST_EXT));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_LD_EXT_CYC));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_ST_EXT_CYC));
-  pulp_trace_data(coreId, cpu_perf_get(SPR_PCER_TCDM_CONT));
-#endif
-}
-
 void
 GOMP_parallel (void (*fn) (void*), void *data, int num_threads, unsigned int flags)
 {
     /* The thread descriptor for slaves of the newly-created team */
     
-    gomp_team_t *new_team;  
+    gomp_team_t *new_team;
     
-    pulp_trace(get_core_id(), TRACE_OMP_PARALLEL_ENTER);
+    pulp_trace_perf(TRACE_OMP_PARALLEL_ENTER);
 
     gomp_team_start (fn, data, num_threads, &new_team);
 
     MSlaveBarrier_Release(new_team->nthreads, new_team->proc_ids, new_team->team);
 
-    perfDump(TRACE_PERF_COUNTERS_ENTER);
     fn(data);
-    perfDump(TRACE_PERF_COUNTERS_EXIT);
     
-    pulp_trace(get_core_id(), TRACE_OMP_PARALLEL_EXIT);
+    pulp_trace_perf(TRACE_OMP_PARALLEL_EXIT);
 
     GOMP_parallel_end();
 
