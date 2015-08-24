@@ -28,10 +28,14 @@
    info         #pragma omp barrier implemetation */
 
 #include "libgomp.h"
+#include <hwTrace.h>
 
 /* Application-level barrier */
 void
 GOMP_barrier()
 {
+    pulp_trace(get_core_id(), TRACE_OMP_BARRIER_ENTER);
     gomp_hal_barrier();
+    pulp_trace(get_core_id(), TRACE_OMP_BARRIER_EXIT);
+ 
 }

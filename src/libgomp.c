@@ -40,6 +40,17 @@ char **_envp;
 static void omp_initenv(int, int);
 static void omp_SPMD_worker(int);
 
+#include <hwTrace.h>
+#include <cpu_hal.h>
+
+static inline void perfInitAndStart()
+{
+#ifdef PROFILE0
+  cpu_perf_conf_events(SPR_PCER_ALL_EVENTS_MASK);
+  cpu_perf_setall(0);
+  cpu_perf_conf(SPR_PCMR_ACTIVE | SPR_PCMR_SATURATE);
+#endif
+}
 
 /* main routine */
 int
@@ -50,6 +61,8 @@ main (int argc, char **argv, char **envp)
 
     //TODO wrap this ifdef inside a function call
     set_evnt_mask_low(id,1); //configure the event mask
+
+    perfInitAndStart();
     
     /* The MASTER executes omp_initenv().. */
     if (id == MASTER_ID)
@@ -168,9 +181,11 @@ omp_SPMD_worker(int myid)
             /* Have work! */
             else
             {
+	        pulp_trace(get_core_id(), TRACE_OMP_PARALLEL_ENTER);
                 omp_task_f = (void*) (&CURR_TEAM(myid)->omp_task_f);
                 omp_args = (void*) (&CURR_TEAM(myid)->omp_args);
                 (**omp_task_f)((int) *omp_args);
+		pulp_trace(get_core_id(), TRACE_OMP_PARALLEL_EXIT);
             } // ! omp_task_f
 	    
             MSlaveBarrier_SlaveEnter(myid, (unsigned int ) CURR_TEAM(myid)->proc_ids[0], (unsigned int ) CURR_TEAM(myid)->nthreads, (unsigned int* ) &(CURR_TEAM(myid)->barrier_lock), (unsigned int* ) &(CURR_TEAM(myid)->barrier_counter),(unsigned int ) CURR_TEAM(myid)->barrier_id);
