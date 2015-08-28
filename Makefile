@@ -82,11 +82,13 @@ sdk.header:
 	cp inc/ompNative.h $(PULP_SDK_HOME)/install/include/ompNative/omp.h
 
 sdk.build:
+ifneq (,$(findstring riscv, $(pulpCoreArchis)))
 	for pulpArchi in $(pulpArchis); do \
 		for pulpRtVersion in $(pulpRtVersions); do \
 			make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/gcc-$$pulpArchi-riscv-$$pulpRtVersion pulpCoreArchi=riscv pulpArchi=$$pulpArchi pulpCompiler=gcc pulpRtVersion=$$pulpRtVersion; if [ $$? -ne 0 ]; then exit 1; fi; \
 		done \
 	done
+endif
 
 	for pulpArchi in $(pulpArchis); do \
 		for pulpCompiler in $(pulpCompilers); do \
