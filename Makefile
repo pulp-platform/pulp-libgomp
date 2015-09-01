@@ -39,7 +39,7 @@ endif
 
 ifeq '$(pulpCoreArchi)' 'riscv'
 LD = riscv32-unknown-elf-gcc
-CC = riscv32-unknown-elf-gcc -D__GCC__ -m32 -mtune=pulp3 -march=RV32I -Wa,-march=RV32IM -D__riscv__
+CC = riscv32-unknown-elf-gcc -D__GCC__ -m32 -mtune=pulp3 -march=RV32I -Wa,-march=RV32IM -D__riscv__ -DRISCV
 AR = riscv32-unknown-elf-ar
 else
 ifeq '$(pulpCompiler)' 'llvm'
