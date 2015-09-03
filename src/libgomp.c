@@ -30,7 +30,7 @@
 #include "libgomp.h"
 
 /*Application Entry Point*/
-extern int _app_main(int argc, char **argv, char **envp);
+extern int main(int argc, char **argv, char **envp);
 
 /* Private vars */
 int _argc;
@@ -53,8 +53,8 @@ static inline void perfInitAndStart()
 }
 
 /* main routine */
-int
-main (int argc, char **argv, char **envp)
+void
+omp_init ()
 {
     int id = get_proc_id() - 1;
     int procs = get_proc_num();
@@ -69,7 +69,6 @@ main (int argc, char **argv, char **envp)
         omp_initenv(procs, id);
     omp_SPMD_worker(id);
     
-    return 0;
 }
 
 /* omp_initenv() - initialize environment & synchronization constructs */
@@ -133,7 +132,7 @@ omp_initenv(int nprocs, int pid)
     #endif
     
     /* Create "main" team descriptor. This also intializes master core's curr_team descriptor */
-    gomp_master_region_start(_app_main, NULL, 1, &root_team);
+    gomp_master_region_start(main, NULL, 1, &root_team);
 }
 
 /* parallel execution */
@@ -154,10 +153,9 @@ omp_SPMD_worker(int myid)
     
     if (myid == MASTER_ID)
     {   
-
         MSlaveBarrier_Wait_init(nprocs, (unsigned int *) CURR_TEAM(myid)->proc_ids);
         
-        _app_main(_argc, _argv, _envp);
+        main(_argc, _argv, _envp);
 
         for(i=1; i<nprocs; i++)
             CURR_TEAM(i) = (gomp_team_t *) OMP_SLAVE_EXIT;
