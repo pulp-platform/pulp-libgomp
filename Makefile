@@ -30,6 +30,10 @@ ifeq '$(pulpRtVersion)' 'profile0'
 FABRIC_CFLAGS += -DPROFILE0
 endif
 
+ifeq '$(pulpRtVersion)' 'profile1'
+FABRIC_CFLAGS += -DPROFILE0 -DPROFILE1
+endif
+
 # include .d files (if available and only if not doing a clean)
 #ifneq ($(MAKECMDGOALS),clean)
 #ifneq ($(strip $(DEPS)),)
@@ -43,7 +47,7 @@ CC = riscv32-unknown-elf-gcc -D__GCC__ -m32 -mtune=pulp3 -march=RV32I -Wa,-march
 AR = riscv32-unknown-elf-ar
 else
 ifeq '$(pulpCompiler)' 'llvm'
-CC =     clang -target or1kle-elf -mcpu=pulp3 -mabi=new
+CC =     clang -target or1kle-elf -mcpu=pulp3
 AR =     or1kle-elf-ar
 else
 CC =     or1kle-elf-gcc

@@ -34,8 +34,12 @@
 void
 GOMP_barrier()
 {
+#ifdef PROFILE0
     pulp_trace(TRACE_OMP_BARRIER_ENTER);
+#endif
     gomp_hal_barrier();
+#ifdef PROFILE0
     pulp_trace(TRACE_OMP_BARRIER_EXIT);
+#endif
  
 }

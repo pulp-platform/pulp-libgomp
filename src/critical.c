@@ -47,7 +47,9 @@ GOMP_atomic_end (void)
 void
 GOMP_critical_start (void)
 {
+#ifdef PROFILE0
     pulp_trace(TRACE_OMP_CRITICAL_ENTER);
+#endif
     unsigned int myid = prv_proc_num;
     gomp_hal_lock(&(CURR_TEAM(myid)->critical_lock));
 }
@@ -56,7 +58,9 @@ void
 GOMP_critical_end (void)
 {
     unsigned int myid = prv_proc_num;
+#ifdef PROFILE0
     pulp_trace(TRACE_OMP_CRITICAL_EXIT);
+#endif
     gomp_hal_unlock(&(CURR_TEAM(myid)->critical_lock));
 }
 

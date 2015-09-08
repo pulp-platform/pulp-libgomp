@@ -77,7 +77,13 @@ GOMP_parallel (void (*fn) (void*), void *data, int num_threads, unsigned int fla
     
     gomp_team_t *new_team;
     
+#ifdef PROFILE0
+#ifdef PROFILE1
     pulp_trace_perf(TRACE_OMP_PARALLEL_ENTER);
+#else
+    pulp_trace(TRACE_OMP_PARALLEL_ENTER);
+#endif
+#endif
 
     gomp_team_start (fn, data, num_threads, &new_team);
 
@@ -85,7 +91,13 @@ GOMP_parallel (void (*fn) (void*), void *data, int num_threads, unsigned int fla
 
     fn(data);
     
+#ifdef PROFILE0
+#ifdef PROFILE1
     pulp_trace_perf(TRACE_OMP_PARALLEL_EXIT);
+#else
+    pulp_trace(TRACE_OMP_PARALLEL_EXIT);
+#endif
+#endif
 
     GOMP_parallel_end();
 
