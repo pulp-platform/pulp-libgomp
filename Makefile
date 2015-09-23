@@ -94,6 +94,7 @@ ifneq (,$(findstring riscv, $(pulpCoreArchis)))
 	done
 endif
 
+ifneq (,$(findstring or10n, $(pulpCoreArchis)))
 	for pulpArchi in $(pulpArchis); do \
 		for pulpCompiler in $(pulpCompilers); do \
 			for pulpRtVersion in $(pulpRtVersions); do \
@@ -101,5 +102,6 @@ endif
 			done \
 		done \
 	done
+endif
 
 .PHONY: build
