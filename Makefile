@@ -4,6 +4,10 @@ pulpCompilers ?= $(pulpCompiler)
 pulpArchi ?= mia
 pulpArchis ?= $(pulpArchi)
 
+ifeq '$(pulpCoreArchi)' 'riscv-rvc'
+pulpCore = riscv
+FABRIC_CFLAGS += -DPULP4
+else
 ifeq '$(pulpCoreArchi)' 'riscv'
 pulpCore = riscv
 FABRIC_CFLAGS += -DPULP4
@@ -18,6 +22,7 @@ FABRIC_CFLAGS += -DPULPEVO
 else
 pulpCore=or10n3
 FABRIC_CFLAGS += -DMIA
+endif
 endif
 endif
 endif
@@ -41,10 +46,24 @@ endif
 #endif
 #endif
 
+ifeq '$(pulpCoreArchi)' 'riscv-rvc'
+LD = riscv32-unknown-elf-gcc -mrvc
+CC = riscv32-unknown-elf-gcc -mrvc -D__GCC__ -m32 -mtune=pulp3 -march=RV32I -Wa,-march=RV32IM -D__riscv__ -DRISCV
+AR = riscv32-unknown-elf-ar
+else
 ifeq '$(pulpCoreArchi)' 'riscv'
 LD = riscv32-unknown-elf-gcc
 CC = riscv32-unknown-elf-gcc -D__GCC__ -m32 -mtune=pulp3 -march=RV32I -Wa,-march=RV32IM -D__riscv__ -DRISCV
 AR = riscv32-unknown-elf-ar
+else
+ifeq '$(pulpCoreArchi)' 'or1k'
+ifeq '$(pulpCompiler)' 'llvm'
+CC =     clang -target or1kle-elf -mcpu=pulp2
+AR =     or1kle-elf-ar
+else
+CC =     or1kle-elf-gcc -mnopostmod -mnomac -mnominmax -mnoabs -mnohwloop -mnovect -mnocmov 
+AR =     or1kle-elf-ar
+endif
 else
 ifeq '$(pulpCompiler)' 'llvm'
 CC =     clang -target or1kle-elf -mcpu=pulp3
@@ -52,6 +71,8 @@ AR =     or1kle-elf-ar
 else
 CC =     or1kle-elf-gcc
 AR =     or1kle-elf-ar
+endif
+endif
 endif
 endif
 
@@ -94,11 +115,29 @@ ifneq (,$(findstring riscv, $(pulpCoreArchis)))
 	done
 endif
 
+ifneq (,$(findstring riscv-rvc, $(pulpCoreArchis)))
+	for pulpArchi in $(pulpArchis); do \
+		for pulpRtVersion in $(pulpRtVersions); do \
+			make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/gcc-$$pulpArchi-riscv-rvc-$$pulpRtVersion pulpCoreArchi=riscv-rvc pulpArchi=$$pulpArchi pulpCompiler=gcc pulpRtVersion=$$pulpRtVersion; if [ $$? -ne 0 ]; then exit 1; fi; \
+		done \
+	done
+endif
+
 ifneq (,$(findstring or10n, $(pulpCoreArchis)))
 	for pulpArchi in $(pulpArchis); do \
 		for pulpCompiler in $(pulpCompilers); do \
 			for pulpRtVersion in $(pulpRtVersions); do \
 				make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$pulpCompiler-$$pulpArchi-or10n-$$pulpRtVersion pulpCoreArchi=or10n pulpArchi=$$pulpArchi pulpCompiler=$$pulpCompiler pulpRtVersion=$$pulpRtVersion; if [ $$? -ne 0 ]; then exit 1; fi; \
+			done \
+		done \
+	done
+endif
+
+ifneq (,$(findstring or1k, $(pulpCoreArchis)))
+	for pulpArchi in $(pulpArchis); do \
+		for pulpCompiler in $(pulpCompilers); do \
+			for pulpRtVersion in $(pulpRtVersions); do \
+				make sdk.build.comp BUILD_DIR=$(BUILD_DIR)/$$pulpCompiler-$$pulpArchi-or1k-$$pulpRtVersion pulpCoreArchi=or1k pulpArchi=$$pulpArchi pulpCompiler=$$pulpCompiler pulpRtVersion=$$pulpRtVersion; if [ $$? -ne 0 ]; then exit 1; fi; \
 			done \
 		done \
 	done
