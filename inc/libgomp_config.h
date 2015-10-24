@@ -4,7 +4,7 @@
 #include "config.h"
 
 #ifndef DEFAULT_MAXPROC
-#define DEFAULT_MAXPROC         4 
+#define DEFAULT_MAXPROC         8 
 #endif
 
 #define NPROCS                  (prv_num_procs)

@@ -14,7 +14,6 @@
 #define _DTYPE          int
 
 #define BARRIER_BASE    LIBGOMP_BASE
-#define DEFAULT_MAXPROC 4
 
 #define MASTER_FLAG(x)                     (volatile _DTYPE *) ((unsigned int) BARRIER_BASE + (x<<2))
 #define SLAVE_FLAG(x)                      (volatile _DTYPE *) ((unsigned int) BARRIER_BASE + (DEFAULT_MAXPROC<<2) + (x<<2))

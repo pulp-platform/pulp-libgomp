@@ -59,6 +59,7 @@ omp_init ()
     int id = get_proc_id() - 1;
     int procs = get_proc_num();
 
+
     //TODO wrap this ifdef inside a function call
     set_evnt_mask_low(id,1); //configure the event mask
 
@@ -155,14 +156,18 @@ omp_SPMD_worker(int myid)
     {   
         MSlaveBarrier_Wait_init(nprocs, (unsigned int *) CURR_TEAM(myid)->proc_ids);
         
+        printf("[Core%d][omp_SPMD_worker] jump to main...\n", get_proc_id() - 1);
         main(_argc, _argv, _envp);
+        printf("[Core%d][omp_SPMD_worker] jump to main...done\n", get_proc_id() - 1);
 
         for(i=1; i<nprocs; i++)
             CURR_TEAM(i) = (gomp_team_t *) OMP_SLAVE_EXIT;
+     
+        printf("[Core%d][omp_SPMD_worker] exiting...\n", get_proc_id() - 1);
+        eoc(1);
         
         /* We release slaves inside gomp_parallel_end() */
         MSlaveBarrier_Release(nprocs, (unsigned int *) CURR_TEAM(myid)->proc_ids, (1<<nprocs)-1);
-
     } // MASTER
     else
     {
