@@ -38,7 +38,7 @@ char **_argv;
 char **_envp;
 
 static void omp_initenv(int, int);
-static void omp_SPMD_worker(int);
+static int omp_SPMD_worker(int);
 
 #include <hwTrace.h>
 #include <cpu_hal.h>
@@ -53,7 +53,7 @@ static inline void perfInitAndStart()
 }
 
 /* main routine */
-void
+int
 omp_init ()
 {
     int id = get_proc_id() - 1;
@@ -66,9 +66,8 @@ omp_init ()
     
     /* The MASTER executes omp_initenv().. */
     if (id == MASTER_ID)
-        omp_initenv(procs, id);
-    omp_SPMD_worker(id);
-    
+      omp_initenv(procs, id);
+    return omp_SPMD_worker(id);  
 }
 
 /* omp_initenv() - initialize environment & synchronization constructs */
@@ -140,13 +139,14 @@ omp_initenv(int nprocs, int pid)
 #define OMP_SLAVE_EXIT 0xfeedbeef
 
 /* omp_SPMD_worker() - worker threads spin until work provided via GOMP_parallel_start() */
-static void
+static int
 omp_SPMD_worker(int myid)
 {
     /* For slaves */
     volatile task_f * omp_task_f;
     volatile int **omp_args;
     int i, nprocs;
+    int retval = 0;
     
     nprocs = prv_num_procs;
     unsigned int timer;
@@ -155,7 +155,7 @@ omp_SPMD_worker(int myid)
     {   
         MSlaveBarrier_Wait_init(nprocs, (unsigned int *) CURR_TEAM(myid)->proc_ids);
         
-        main(_argc, _argv, _envp);
+        retval = main(_argc, _argv, _envp);
 
         for(i=1; i<nprocs; i++)
             CURR_TEAM(i) = (gomp_team_t *) OMP_SLAVE_EXIT;
@@ -194,7 +194,7 @@ omp_SPMD_worker(int myid)
         } // while 
     } // if master/slave
     
-    return;
+    return retval;
 } // omp_worker
 
 /******************************************************************************/
