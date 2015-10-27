@@ -10,13 +10,9 @@
 // mode. Otherwise they are not initialized and are just 32'hXXXXXXXX
 void gompmem_init()
 {
-    printf("[Core%d][gompmem_init]...\n", get_proc_id() - 1);
-    
     int i;
     for(i=0;i<0x200;i++)
         *(int*)(LIBGOMP_BASE + 4*i) = 0;
-    
-    printf("[Core%d][gompmem_init]...done\n", get_proc_id() - 1);
 }
 
 void shmalloc_init(){
