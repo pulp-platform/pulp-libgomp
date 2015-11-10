@@ -33,20 +33,20 @@
 /* Standard public APIs */
 
 /* env.c */
-extern inline void omp_set_num_threads (int);
-extern inline void omp_set_dynamic (int);
-extern inline int omp_get_dynamic (void);
-extern inline void omp_set_nested (int);
-extern inline int omp_get_nested (void);
+extern void omp_set_num_threads (int);
+extern void omp_set_dynamic (int);
+extern int omp_get_dynamic (void);
+extern  void omp_set_nested (int);
+extern  int omp_get_nested (void);
 
 /* libgomp.c */
-extern inline int omp_get_num_procs(void);
+extern  int omp_get_num_procs(void);
 
 /* parallel.c */
-extern inline int omp_get_num_threads(void);
-extern inline int omp_get_max_threads(void);
-extern inline int omp_get_thread_num(void);
-extern inline int omp_in_parallel(void);
+extern  int omp_get_num_threads(void);
+extern  int omp_get_max_threads(void);
+extern  int omp_get_thread_num(void);
+extern  int omp_in_parallel(void);
 
 extern double omp_get_wtime(void);
 extern int omp_get_wtick(void);
