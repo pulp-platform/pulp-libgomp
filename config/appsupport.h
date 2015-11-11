@@ -18,6 +18,7 @@
 #include "config.h"
 #include "pulp.h"
 #include "events.h"
+#include "timer.h"
 #if defined(PULP3) || defined(PULP3_LEGACY)
 #include "spr-defs.h"
 #include "events_ids.h"
