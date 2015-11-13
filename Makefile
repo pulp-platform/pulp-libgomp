@@ -95,7 +95,7 @@ sdk.clean: clean
 sdk.checkout:
 
 sdk.build.comp: build
-	mkdir -p $(PULP_SDK_HOME)/install/or1k/lib
+	mkdir -p $(PULP_SDK_HOME)/install/$(pulpCoreArchi)/lib
 	cp $(BUILD_DIR)/$(GOMP_LIBNAME) $(PULP_SDK_HOME)/install/$(pulpCoreArchi)/lib
 
 sdk.header:
