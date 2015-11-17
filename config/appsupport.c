@@ -10,7 +10,6 @@
 
 void  abort() {
   printf("ERROR - Aborting\n");
-  //eoc(0);
-  while(1);
+  exit(1);
 }
 
