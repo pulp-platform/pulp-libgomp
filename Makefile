@@ -46,14 +46,21 @@ endif
 #endif
 #endif
 
+ifeq '$(RISCV_GCC_VERSION)' '1.1'
+RISCV_MTUNE = -mtune=pulp3
+else
+RISCV_MTUNE = -mpulp
+endif
+
+
 ifeq '$(pulpCoreArchi)' 'riscv-rvc'
 LD = riscv32-unknown-elf-gcc -mrvc
-CC = riscv32-unknown-elf-gcc -mrvc -D__GCC__ -m32 -mtune=pulp3 -march=RV32I -Wa,-march=RV32IM -D__riscv__ -DRISCV
+CC = riscv32-unknown-elf-gcc -mrvc -D__GCC__ -m32 $(RISCV_MTUNE) -march=RV32I -Wa,-march=RV32IM -D__riscv__ -DRISCV
 AR = riscv32-unknown-elf-ar
 else
 ifeq '$(pulpCoreArchi)' 'riscv'
 LD = riscv32-unknown-elf-gcc
-CC = riscv32-unknown-elf-gcc -D__GCC__ -m32 -mtune=pulp3 -march=RV32I -Wa,-march=RV32IM -D__riscv__ -DRISCV
+CC = riscv32-unknown-elf-gcc -D__GCC__ -m32 $(RISCV_MTUNE) -march=RV32I -Wa,-march=RV32IM -D__riscv__ -DRISCV
 AR = riscv32-unknown-elf-ar
 else
 ifeq '$(pulpCoreArchi)' 'or1k'
