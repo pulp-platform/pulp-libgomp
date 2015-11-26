@@ -54,7 +54,7 @@ endif
 ifeq '$(RISCV_GCC_VERSION)' '1.1'
 RISCV_MTUNE = -mtune=pulp3
 else
-RISCV_MTUNE = -mpulp
+RISCV_MTUNE = -mpulp -mnohwloop
 endif
 
 
