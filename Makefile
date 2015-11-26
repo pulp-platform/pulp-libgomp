@@ -12,6 +12,10 @@ ifeq '$(pulpCoreArchi)' 'riscv'
 pulpCore = riscv
 FABRIC_CFLAGS += -DPULP4
 else
+ifeq '$(pulpArchi)' 'pulp4z'
+FABRIC_CFLAGS += -DPULP4 -D__ZEDBOARD__ -DNB_PE=2
+pulpCore=or10n4
+else
 ifeq '$(pulpArchi)' 'pulp4'
 FABRIC_CFLAGS += -DPULP4
 pulpCore=or10n4
@@ -22,6 +26,7 @@ FABRIC_CFLAGS += -DPULPEVO
 else
 pulpCore=or10n3
 FABRIC_CFLAGS += -DMIA
+endif
 endif
 endif
 endif
