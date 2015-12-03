@@ -10,7 +10,7 @@ static inline void SlaveEnter_polling(int myid) {
     /* Read start value */
     volatile _DTYPE g = *flag;
     
-    #ifdef DEBUG
+    #ifdef OMP_DEBUG
     printf("SLAVE  FLAG : %d, ID: %d, ADDR: %x\n",*(SLAVE_FLAG(myid)),myid,(SLAVE_FLAG(myid)));
     printf("MASTER FLAG : %d, ID : %d, ADDR: %x\n",*(MASTER_FLAG(myid)),myid,(MASTER_FLAG(myid)));
     #endif
@@ -27,7 +27,7 @@ static inline void Wait_polling(int num_threads, unsigned int *local_slave_ids) 
     for(i = 1; i < num_threads; ++i) {
         curr_proc_id = local_slave_ids[i];
         
-        #ifdef DEBUG
+        #ifdef OMP_DEBUG
         printf("CURR PROC ID: %d, MASTER FLAG : %d, ADDR: %x, NUM_THREADS: %d\n",curr_proc_id,*(MASTER_FLAG(curr_proc_id)),(MASTER_FLAG(curr_proc_id)), num_threads );
         #endif
         
@@ -47,7 +47,7 @@ void Release_polling(int num_threads, unsigned int *local_slave_ids){
     for(i = 1; i < num_threads; ++i) {
         curr_proc_id = local_slave_ids[i];
         
-        #ifdef DEBUG
+        #ifdef OMP_DEBUG
         printf("CURR PROC ID: %d, SLAVE FLAG : %d, ADDR: %x, NUM_THREADS: %d\n",*(MASTER_FLAG(curr_proc_id)),curr_proc_id,(MASTER_FLAG(curr_proc_id)), num_threads );
         #endif
         

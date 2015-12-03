@@ -111,7 +111,7 @@ omp_initenv(int nprocs, int pid)
     WSMEM_LOCK_SIGNAL();
     #endif
     
-    #ifdef DEBUG
+    #ifdef OMP_DEBUG
     _printstrn ("----------- OpenMP Environment ------------");
     _printstrn ("------------- Address check ---------------");
     _printstrn ("");
