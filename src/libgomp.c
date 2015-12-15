@@ -43,12 +43,22 @@ static int omp_SPMD_worker(int);
 #include <hwTrace.h>
 #include <cpu_hal.h>
 
+#ifdef RISCV
+#define PCER_ALL_EVENTS_MASK CSR_PCER_ALL_EVENTS_MASK
+#define PCMR_ACTIVE CSR_PCMR_ACTIVE
+#define PCMR_SATURATE CSR_PCMR_SATURATE
+#else
+#define PCER_ALL_EVENTS_MASK SPR_PCER_ALL_EVENTS_MASK
+#define PCMR_ACTIVE SPR_PCMR_ACTIVE
+#define PCMR_SATURATE SPR_PCMR_SATURATE
+#endif
+
 static inline void perfInitAndStart()
 {
 #ifdef PROFILE0
-  cpu_perf_conf_events(SPR_PCER_ALL_EVENTS_MASK);
+  cpu_perf_conf_events(PCER_ALL_EVENTS_MASK);
   cpu_perf_setall(0);
-  cpu_perf_conf(SPR_PCMR_ACTIVE | SPR_PCMR_SATURATE);
+  cpu_perf_conf(PCMR_ACTIVE | PCMR_SATURATE);
 #endif
 }
 
