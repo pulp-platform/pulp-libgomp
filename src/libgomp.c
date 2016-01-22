@@ -27,7 +27,7 @@
                 Alessandro Capotondi - alessandro.capotondi@unibo.it
    info         Libgomp main entry point */
 
-#include "libgomp.h"
+#include "pulp.h"
 
 /*Application Entry Point*/
 extern int main(int argc, char **argv, char **envp);
@@ -41,7 +41,6 @@ static void omp_initenv(int, int);
 static int omp_SPMD_worker(int);
 
 #include <hwTrace.h>
-#include <cpu_hal.h>
 
 #ifdef RISCV
 #define PCER_ALL_EVENTS_MASK CSR_PCER_ALL_EVENTS_MASK

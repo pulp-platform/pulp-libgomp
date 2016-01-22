@@ -28,10 +28,7 @@
    info         #pragma omp parallel implementation */
 
 #include "libgomp.h"
-#include <cpu_hal.h>
-#ifdef PULP3
-#include "events.h"
-#endif
+#include "pulp.h"
 
 void
 GOMP_parallel_start (void *fn, void *data, int num_threads)
