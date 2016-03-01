@@ -20,7 +20,6 @@
 #include "events.h"
 #include "timer.h"
 #if defined(PULP3) || defined(PULP3_LEGACY)
-#include "spr-defs.h"
 #include "events_ids.h"
 #include "utils.h"
 #include "string_lib.h"
