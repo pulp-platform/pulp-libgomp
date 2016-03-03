@@ -53,9 +53,11 @@ GOMP_parallel_end (void)
 
     barrier_id = (the_team->barrier_id);
     
+#if EU_VERSION == 1
     *(volatile int*) (SET_BARRIER_BASE+4*(barrier_id) ) = (the_team->nthreads<<16)+(1<<(myid) ); //set barrier
     *(volatile int*) (WAIT_BARRIER) =  barrier_id;
     *(volatile int*) (CORE_CLKGATE) =  0x1;
+
     // Flush the pipeline
 #ifdef __riscv__
   asm volatile ("WFI");
@@ -63,6 +65,12 @@ GOMP_parallel_end (void)
   asm volatile ("l.psync");
 #endif
     *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
+
+#else
+
+    eu_bar_trig_wait_clr(eu_bar_addr(barrier_id));
+
+#endif
 
     gomp_team_end();
 }

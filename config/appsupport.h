@@ -73,6 +73,7 @@ static inline void wait_event_buff(int core_id)  {
 }
 
 #elif defined(PULP3) || defined(PULP3_LEGACY)
+#if EU_VERSION == 1
 static inline void trigg_core( unsigned int event_mask ){
     *(volatile int*) (TRIGG_BARRIER) = event_mask;
     return;
@@ -94,7 +95,7 @@ static inline void clear_barrier_buff()  {
     *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
 }
 
-static inline void set_barrier(unsigned int barrier_id, unsigned int num_threads, unsigned int mask_to_trigg)  {
+static inline void set_barrier(unsigned int barrier_id, unsigned int num_threads, unsigned int coreMask, unsigned int mask_to_trigg)  {
     *(volatile int*) (SET_BARRIER_BASE+4*barrier_id) = (num_threads<<16)+mask_to_trigg;
 }
 
@@ -118,6 +119,40 @@ static inline void wait_event_buff()  {
 #endif
     *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
 }
+
+#else
+
+static inline void trigg_core( unsigned int event_mask ){
+    eu_evt_trig(eu_evt_trig_addr(0), event_mask);
+}
+
+static inline void wait_barrier_buff(unsigned int barrier_id)  {
+    eu_bar_trig_wait_clr(eu_bar_addr(barrier_id));
+}
+
+static inline void clear_barrier_buff()  {
+    eu_bar_trig_wait_clr(eu_bar_addr(0));
+}
+
+static inline void set_barrier(unsigned int barrier_id, unsigned int num_threads, unsigned int coreMask, unsigned int mask_to_trigg)  {
+    eu_bar_setup_mask(eu_bar_addr(barrier_id), coreMask, mask_to_trigg);
+}
+
+static inline unsigned int check_event(unsigned int core_id)  {
+    printf("%d: %s %d\n", get_core_id(), __FILE__, __LINE__);
+    return 0;
+}
+
+static inline void get_barrier(int core_id,unsigned int barrier_id)  {
+    printf("%d: %s %d\n", get_core_id(), __FILE__, __LINE__);
+}
+
+static inline void wait_event_buff()  {
+    eu_evt_waitAndClr(1<<0);
+}
+
+
+#endif
 
 #endif
 

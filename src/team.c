@@ -141,7 +141,7 @@ gomp_master_region_start (void *fn, void *data, int specified, gomp_team_t **tea
     new_team->thread_ids[myid] = 0;
     new_team->proc_ids[0] = myid;
 
-    set_barrier(new_team->barrier_id,new_team->nthreads,new_team->team);
+    set_barrier(new_team->barrier_id,new_team->nthreads,new_team->team,new_team->team);
 
     // to make SW barrier work
     for(i=1; i<prv_num_procs; i++)
@@ -237,7 +237,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     } // for
     
     if(new_team->barrier_id!=0xFF)
-        set_barrier(new_team->barrier_id,new_team->nthreads,new_team->team);
+        set_barrier(new_team->barrier_id,new_team->nthreads,new_team->team,new_team->team);
     else
     {
         new_team->barrier_counter = num_threads; 

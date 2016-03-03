@@ -9,7 +9,12 @@ MSGBarrier_SlaveEnter(int myid,
                       int nthreads,
                       unsigned int *lock, 
                       volatile unsigned int *barr_cnt,unsigned int barrier_id) {
+#if EU_VERSION == 1
   wait_barrier_buff(barrier_id);
+#else
+    wait_barrier_buff(barrier_id);
+    wait_event_buff(myid);  
+#endif
 }
 
 /* This is the barrier code executed by the MASTER core to gather SLAVES */

@@ -70,7 +70,11 @@ omp_init ()
 
 
     //TODO wrap this ifdef inside a function call
+#if EU_VERSION == 1
     set_evnt_mask_low(id,1); //configure the event mask
+#else
+    eu_evt_maskSet(1<<0);
+#endif
 
     perfInitAndStart();
     
