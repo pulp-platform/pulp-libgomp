@@ -33,7 +33,11 @@
 #include "appsupport.h"
 
 #ifdef PULP3
+#if EU_VERSION == 3
+#define NUM_HW_BARRIER (NB_PE/2)
+#else
 #define NUM_HW_BARRIER 6
+#endif
 #endif
 
 #define GOMP_WARN_NOT_SUPPORTED(what) printf("[libGOMP] " what " is not supported yet.");
@@ -181,7 +185,7 @@ typedef struct {
 
 #ifndef __NO_OMP_PREALLOC__
 
-#define MAX_TEAM_DESC                   6
+#define MAX_TEAM_DESC                   NUM_HW_BARRIER
 #define MAX_WS                          12
 
 //Team Descriptor Pre-allocated Pool
