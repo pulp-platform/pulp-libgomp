@@ -34,7 +34,7 @@
 
 #ifdef PULP3
 #if EU_VERSION == 3
-#define NUM_HW_BARRIER (NB_PE/2)
+#define NUM_HW_BARRIER (NB_PE-1)
 #else
 #define NUM_HW_BARRIER 6
 #endif
