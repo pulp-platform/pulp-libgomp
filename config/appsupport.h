@@ -17,10 +17,14 @@
 
 #include "config.h"
 #include "pulp.h"
+#if EU_VERSION == 1
 #include "events.h"
+#endif
 #include "timer.h"
 #if defined(PULP3) || defined(PULP3_LEGACY)
+#if EU_VERSION == 1
 #include "events_ids.h"
+#endif
 #include "utils.h"
 #include "string_lib.h"
 #endif

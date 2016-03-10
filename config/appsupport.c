@@ -6,7 +6,9 @@
 
 #include "appsupport.h"
 #include "pulp.h"
+#if EU_VERSION == 1
 #include "events.h"
+#endif
 
 void  abort() {
   printf("ERROR - Aborting\n");
