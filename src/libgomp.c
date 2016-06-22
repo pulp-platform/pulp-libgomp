@@ -42,7 +42,7 @@ static int omp_SPMD_worker(int);
 
 #include <hwTrace.h>
 
-#ifdef RISCV
+#ifdef __riscv__
 #define PCER_ALL_EVENTS_MASK CSR_PCER_ALL_EVENTS_MASK
 #define PCMR_ACTIVE CSR_PCMR_ACTIVE
 #define PCMR_SATURATE CSR_PCMR_SATURATE
