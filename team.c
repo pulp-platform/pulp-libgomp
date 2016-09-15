@@ -258,7 +258,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
             /* Update local team structure pointers of all processors of the team */
             *((gomp_team_t **) curr_team_ptr) = new_team;
 
-#ifndef OMP_NOWAIT_SUPPORT
+#ifdef OMP_NOWAIT_SUPPORT
             new_team->work_share[i] = root_ws;
 #endif
 

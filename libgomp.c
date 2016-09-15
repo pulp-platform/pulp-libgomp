@@ -60,13 +60,16 @@ omp_initenv( )
     /* Init WS Descriptor Pre-allocated Pool */
     gomp_ws_pool_init();
 
+#if 0
     printf("Thread Pool Bitmask:\t%x (%x)\n", gomp_data.thread_pool_info.thread_pool, &(gomp_data.thread_pool_info.thread_pool));
     printf("Thread Pool #Idles: \t%d (%x)\n", gomp_data.thread_pool_info.idle_cores , &(gomp_data.thread_pool_info.idle_cores ));
     printf("Thread Pool Lock:   \t%x\n", &gomp_data.thread_pool_info.lock);
     printf("---- Check ---\n");
     printf("Thread Pool Bitmask:\t%x (%x)\n", GLOBAL_THREAD_POOL , &GLOBAL_THREAD_POOL );
     printf("Thread Pool #Idles: \t%d (%x)\n", GLOBAL_IDLE_CORES  , &GLOBAL_IDLE_CORES  );
-    printf("Thread Pool Lock:   \t%x\n", GLOBAL_LOCK_ADDR);    
+    printf("Thread Pool Lock:   \t%x\n", GLOBAL_LOCK_ADDR);
+#endif
+    
     return;
 }
 

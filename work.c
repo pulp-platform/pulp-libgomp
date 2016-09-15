@@ -33,6 +33,7 @@
 #warning You compiled the library without OMP_NOWAIT_SUPPORT, so nowait clause is not safe to be used.
 #endif
 
+// #define OMP_WORK_DEBUG
 
 #define WS_INITED       ( 0xfeeddeadU )
 #define WS_NOT_INITED   ( 0x0U )
@@ -192,7 +193,11 @@ gomp_work_share_start ( gomp_work_share_t **new_ws )
     
     /*Multiple WS*/
     gomp_work_share_t *curr_ws = (gomp_work_share_t *) CURR_WS(pid);
-    
+
+#ifdef OMP_WORK_DEBUG
+    printf("[%d-%d][gomp_work_share_start] curr_ws 0x%x (next 0x%x)\n", get_proc_id(), get_cl_id(), curr_ws, curr_ws->next_ws);
+#endif
+
     gomp_hal_lock(&curr_ws->lock); //Acquire the curr_ws lock
     *new_ws = curr_ws->next_ws;
 
@@ -210,9 +215,12 @@ gomp_work_share_start ( gomp_work_share_t **new_ws )
     gomp_hal_lock(&(*new_ws)->lock); //acquire new ws lock
     gomp_hal_unlock(&curr_ws->lock); //release curr ws lock
 
-    CURR_WS(pid) = *new_ws; //update curr ws pointer
+    CURR_WS(pid) = *new_ws; //update curr ws pointer    
     #endif
 
+#ifdef OMP_WORK_DEBUG
+    printf("[%d-%d][gomp_work_share_start] NewWS 0x%x (Prev 0x%x)\n", get_proc_id(), get_cl_id(), *new_ws, (*new_ws)->prev_ws);
+#endif
     return ret;
 }
 
