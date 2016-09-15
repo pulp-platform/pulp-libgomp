@@ -29,7 +29,7 @@ gomp_hal_hwTrigg_core( uint32_t cmask)
 
 
 /* Software Barriers Data Type */
-typedef int32_t MSGBarrier;
+typedef volatile int32_t MSGBarrier;
 #define Log2SizeofMSGBarrier (2U)
 
 /* Software Barriers Base Address */

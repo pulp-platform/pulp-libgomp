@@ -7,7 +7,6 @@
 #define __OMP_HAL_H__
 
 #include <stdint.h>
-#include <assert.h>
 
 #include <hal/pulp.h>
 #include <pulp.h>
@@ -55,4 +54,12 @@ gomp_hal_init()
     /* Start Performance Counters */
     perfInitAndStart();
 }    
+
+
+#define gomp_assert(x) \
+{\
+    if( ! (x)) {\
+        printf("[GOMP] Assert failed at file %s line %d\n",__FILE__, __LINE__); \
+    }\
+}
 #endif /* __HAL_H__ */

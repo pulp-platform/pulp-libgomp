@@ -5,17 +5,8 @@
 #ifndef __MEMUTILS_H__
 #define __MEMUTILS_H__
 
-#include "omp-hal.h"
 #include <stdint.h>
 #include <malloc.h>
-
-static inline void
-gompmem_init ()
-{
-	uint32_t i;
-	for (i = 0; i < get_num_procs(); ++i)
-		*NFLAGS(i) = 0x0U;
-}
 
 static inline void *
 shmalloc(uint32_t size)

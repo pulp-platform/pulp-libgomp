@@ -62,7 +62,9 @@ gomp_team_pool_init ( )
     gomp_team_t *team;
 
     /* Check Gomp Memory Integrity */
-    assert((uint32_t) &gomp_data.thread_pool_info == (uint32_t) GLOBAL_INFOS_BASE);
+    printf("%x, %x Assert %d \n", (uint32_t) &(gomp_data),  (uint32_t) LIBGOMP_BASE, (((uint32_t) &(gomp_data)) == ((uint32_t) (LIBGOMP_BASE)) ));
+    
+    gomp_assert(((uint32_t) &(gomp_data) == (uint32_t) LIBGOMP_BASE));
 
     gomp_team_pool_lock_init( );
     
@@ -123,7 +125,7 @@ gomp_new_team ( )
     gomp_team_t *new_team;
 
     new_team = gomp_pull_team_pool();
-    assert(new_team != (gomp_team_t *) NULL);
+    gomp_assert(new_team != (gomp_team_t *) NULL);
     return new_team;
 }
 
@@ -159,7 +161,7 @@ gomp_master_region_start ( __attribute__((unused)) void *fn,
                            __attribute__((unused)) int specified,
                                                    gomp_team_t **team)
 {
-    uint32_t cid, nprocs;
+    uint32_t i, nprocs;
     gomp_team_t *new_team;
 
     nprocs    = get_num_procs();
@@ -169,6 +171,9 @@ gomp_master_region_start ( __attribute__((unused)) void *fn,
 
     new_team->nthreads = nprocs;
     new_team->team = 0xFFU;
+
+    for (i = 0; i < nprocs; ++i)
+        new_team->proc_ids[i] = i;
     
     /* Update Team */
     new_team->parent = ( gomp_team_t * ) NULL;
@@ -197,7 +202,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     
     /* Create the team descriptor for current parreg */
     new_team = gomp_new_team();
-    assert(new_team != (gomp_team_t *) NULL);
+    gomp_assert(new_team != (gomp_team_t *) NULL);
 
     new_team->omp_task_f = (void *)(fn);
     new_team->omp_args = data;

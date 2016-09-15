@@ -80,8 +80,12 @@ omp_SPMD_worker()
         /* Create "main" team descriptor. This also intializes master core's curr_team descriptor */
         gomp_master_region_start( NULL, NULL, 0x0, &root_team );
 
+        printf("[%d-%d][omp_SPMD_worker] master region created\n", (int) get_core_id(), (int) get_cl_id());
+
         /* wait all the threads */
         MSGBarrier_Wait_init(root_team->nthreads, root_team->proc_ids);
+
+        printf("[%d-%d][omp_SPMD_worker] enter the main\n", (int) get_core_id(), (int) get_cl_id());
 
         /* Enter to the application Main */
         retval = main(_argc, _argv, _envp);

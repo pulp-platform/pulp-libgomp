@@ -141,6 +141,7 @@ typedef struct{
 
 typedef struct gomp_data_s
 {
+    char*                 barriers[SWBAR_SIZE];
     global_infos_t        thread_pool_info;
     gomp_team_t *         curr_team[DEFAULT_MAX_PE];
     omp_lock_t            team_pool_lock;
@@ -156,7 +157,7 @@ gomp_data_t gomp_data __attribute__((section(".libgomp")));
 
 /* Statically allocated global variables
  * (to avoid declaring a "real" global variable */
-#define GLOBAL_INFOS_BASE       ( LIBGOMP_BASE )
+#define GLOBAL_INFOS_BASE       ( LIBGOMP_BASE + SWBAR_SIZE )
 #define GLOBAL_INFOS_SIZE       ( sizeof(global_infos_t) )
 
 #define GLOBAL_THREAD_POOL      ( *((uint32_t*) ( GLOBAL_INFOS_BASE )) )

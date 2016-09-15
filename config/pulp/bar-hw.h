@@ -80,9 +80,11 @@ gomp_hal_wait_hwEvent_buff( )
 /*** *** Master Slave Barrier APIs *** ***/
 
 ALWAYS_INLINE void
-MSGBarrier_hwWait( uint32_t barrier_id)
+MSGBarrier_hwWait( uint32_t barrier_id,
+                   uint32_t nthreads,
+                   uint32_t thMask)
 {
-    /* Use Hardware Barrier */
+    gomp_hal_set_hwBarrier( barrier_id, nthreads, thMask);
     gomp_hal_wait_hwBarrier_buff( barrier_id );
 }
 
@@ -100,7 +102,7 @@ MSGBarrier_hwSlaveEnter( uint32_t barrier_id)
 ALWAYS_INLINE void
 MSGBarrier_hwRelease( uint32_t thMask )
 {
-    gomp_hal_hwTrigg_core( thMask);
+    gomp_hal_hwTrigg_core( thMask );
 }
 
 ALWAYS_INLINE void
@@ -118,11 +120,11 @@ MSGBarrier_Wait_init( uint32_t nthreads,
     for( i = 1; i < nthreads; ++i )
     {
         uint32_t slave_id = slave_ids[i];
-        while( !(*(NFLAGS(slave_id))) )
+        while( !(*(NFLAGS(slave_id)) == 0x1) )
             continue;
 
         /* Reset flag */
-        *(NFLAGS(slave_id)) = 0x0U;
+        *(NFLAGS(slave_id)) = 0x0;
     }
 }
 
@@ -130,7 +132,7 @@ ALWAYS_INLINE void
 MSGBarrier_SlaveEnter_init ( uint32_t pid )
 {
     /* Notify the master I'm on the barrier */
-    *(NFLAGS(pid)) = 0x1U;
+    *(NFLAGS(pid)) = 0x1;
     gomp_hal_wait_hwEvent_buff(/*pid*/);
 }
 

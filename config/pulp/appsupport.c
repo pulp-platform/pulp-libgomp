@@ -10,5 +10,6 @@ void abort()
 {
   printf("ERROR: aborting...\n");
   exit(1);
+  eoc(1);
 }
 

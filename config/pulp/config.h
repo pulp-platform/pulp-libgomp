@@ -15,12 +15,11 @@
 //------------------------------------------------------------
 // Builtin command line parameter defaults
 //------------------------------------------------------------
-#define SIZEOF_UNSIGNED         0x4U
-#define SIZEOF_PTR              0x4U
-#define SIZEOF_INT              0x4U
-#define SIZEOF_WORD             0x4U
-#define LIBGOMP_BASE            (LIBGOMP_BASE_ADDR)
-#define LIBGOMP_GBASE           (LIBGOMP_GBASE_ADDR)
+#define SIZEOF_UNSIGNED         ( 0x4U )
+#define SIZEOF_PTR              ( 0x4U )
+#define SIZEOF_INT              ( 0x4U )
+#define SIZEOF_WORD             ( 0x4U )
+#define LIBGOMP_BASE            ( 0x0U )
 
 /* Maximum number of clusters supported */
 #ifndef DEFAULT_MAXCL

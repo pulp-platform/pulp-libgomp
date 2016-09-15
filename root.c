@@ -8,6 +8,7 @@
 /* SOURCES */
 #include "config/pulp/appsupport.c"
 #include "config/pulp/lock.c"
+#include "config/pulp/memutils.c"
 
 #include "barrier.c"
 #include "iter.c"                

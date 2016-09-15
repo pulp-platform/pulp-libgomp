@@ -43,21 +43,8 @@ void
 GOMP_parallel_end (void)
 {
     uint32_t pid  = get_proc_id();
-    gomp_team_t *team = (gomp_team_t *) CURR_TEAM(pid);
-    int barrier_id    = team->barrier_id;
-    
-
-    *(volatile int*) (SET_BARRIER_BASE+4*(barrier_id) ) = (team->nthreads<<16)+(1<<(pid) ); //set barrier
-    *(volatile int*) (WAIT_BARRIER) =  barrier_id;
-    *(volatile int*) (CORE_CLKGATE) =  0x1;
-
-    // Flush the pipeline
-#ifdef __riscv__
-  asm volatile ("WFI");
-#else
-  asm volatile ("l.psync");
-#endif
-    *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
+    gomp_team_t *team = (gomp_team_t *) gomp_get_curr_team(pid);
+    MSGBarrier_hwWait( team->barrier_id, team->nthreads, 0x1U<<pid );
     gomp_team_end();
 }
 
