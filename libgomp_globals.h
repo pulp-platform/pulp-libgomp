@@ -70,6 +70,7 @@ typedef struct gomp_work_share_s
 
     //FIXME should be removed
     int checkfirst;
+    uint32_t embedded;
     omp_lock_t exit_lock;
     uint32_t completed;
     

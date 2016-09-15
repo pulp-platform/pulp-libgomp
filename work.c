@@ -33,6 +33,13 @@
 #warning You compiled the library without OMP_NOWAIT_SUPPORT, so nowait clause is not safe to be used.
 #endif
 
+
+#define WS_INITED       ( 0xfeeddeadU )
+#define WS_NOT_INITED   ( 0x0U )
+
+#define WS_EMBEDDED     ( 0xfeeddeadU )
+#define WS_NOT_EMBEDDED ( 0x0U )
+
 /*** Workshare Pool APIs ***/
 
 ALWAYS_INLINE void
@@ -76,6 +83,7 @@ gomp_ws_pool_init ( )
     for(i = 1U; i < MAX_WS; ++i)
     {
         ws = gomp_get_ws_from_pool(i);
+        ws->embedded = WS_NOT_EMBEDDED;
         ws->next_free = gomp_data.ws_pool_list;
         gomp_data.ws_pool_list = ws;
     }
@@ -103,15 +111,13 @@ gomp_pull_ws_pool ( )
     return ws;
 }
 
-#define WS_INITED     ( 0xfeeddeadU )
-#define WS_NOT_INITED ( 0x0U )
-
 /* Mallocate a work share descriptor */
 ALWAYS_INLINE gomp_work_share_t *
 gomp_malloc_ws ( )
 {
     gomp_work_share_t *ws = (gomp_work_share_t *)shmalloc(sizeof(gomp_work_share_t));
     ws->next_free = (gomp_work_share_t *) NULL;
+    ws->embedded = WS_NOT_EMBEDDED;
     return ws;
 }
 
@@ -138,7 +144,8 @@ alloc_work_share ( )
 ALWAYS_INLINE void
 gomp_free_work_share ( gomp_work_share_t *ws )
 {
-    gomp_push_ws_pool(ws);
+    if(ws->embedded == WS_NOT_EMBEDDED)
+        gomp_push_ws_pool(ws);
 }
 
 ALWAYS_INLINE gomp_work_share_t *
@@ -216,7 +223,7 @@ gomp_work_share_end_nowait ()
     gomp_team_t *team = (gomp_team_t *) CURR_TEAM(pid);
     gomp_work_share_t *ws;
 
-    # ifdef __OMP_SINGLE_WS__
+    # ifndef OMP_NOWAIT_SUPPORT
     ws = team->work_share;
     # else
     ws = team->work_share[pid];
@@ -227,7 +234,7 @@ gomp_work_share_end_nowait ()
 
     if (ws->completed == team->nthreads)
     {
-        #ifndef __OMP_SINGLE_WS__
+        #ifdef OMP_NOWAIT_SUPPORT
         //NOTE at this point no more threads point to ws->prev_ws because you
         // are sure that everyone point to ws. Thus you can free ws->prev_ws
         if(ws->prev_ws)

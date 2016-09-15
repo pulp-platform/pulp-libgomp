@@ -38,28 +38,28 @@ get_cl_id()
 static inline uint32_t
 get_num_procs()
 {
-    return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x12);
+  return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x12);
 }
 
 static inline uint32_t
 get_num_clusters()
 {
-     return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x10);
+ return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x10);
 }
 
 /*************************************************************
  * Print functions *
  *************************************************************/
 
-#define _printdecp(a, b) printf("%s %d - Processor %d\n", a, b, get_proc_id() - 1)
+#define _printdecp(a, b) printf("%s %d - Processor %d\n", a, b, get_proc_id())
 #define _printdect(a, b) printf("%s %d - Time %d\n", a, b, get_time())
 #define _printdecn(a, b) printf("%s %d\n", a, b)
 
-#define _printhexp(a, b) printf("%s %x - Processor %d\n", a, b, get_proc_id() - 1)
+#define _printhexp(a, b) printf("%s %x - Processor %d\n", a, b, get_proc_id())
 #define _printhext(a, b) printf("%s %x - Time %d\n", a, b, get_time())
 #define _printhexn(a, b) printf("%s %x\n", a, b)
 
-#define _printstrp(a) printf("%s - Processor %d\n", a, get_proc_id() - 1)
+#define _printstrp(a) printf("%s - Processor %d\n", a, get_proc_id())
 #define _printstrt(a) printf("%s - Time %d\n", a, get_time())
 #define _printstrn(a) printf("%s\n", a)
 

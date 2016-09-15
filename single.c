@@ -63,7 +63,7 @@ GOMP_single_start(void)
     {
         ws->checkfirst = WS_NOT_INITED;
         
-        #ifndef __OMP_SINGLE_WS__
+        #ifdef OMP_NOWAIT_SUPPORT
         gomp_free_work_share(ws->prev_ws);
         #endif
     }

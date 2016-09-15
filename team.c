@@ -78,6 +78,7 @@ gomp_team_pool_init ( )
     {
         team = gomp_get_team_from_pool(i);
         team->barrier_id = i;
+        team->root_ws.embedded = WS_EMBEDDED;
         team->next = gomp_data.team_pool_list;
         gomp_data.team_pool_list = team;
     }
@@ -224,13 +225,19 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     new_team->atomic_lock   = 0x0;
     
     /* Init default work share */  
-    gomp_work_share_t *root_ws = (gomp_work_share_t *) gomp_new_work_share();
+    gomp_work_share_t *root_ws = &(new_team->root_ws);
+    root_ws->lock       = 0x0;
+    root_ws->enter_lock = 0x0;
+    root_ws->exit_lock  = 0x0;
     
-    #ifdef __OMP_SINGLE_WS__
-    new_team->work_share = root_ws;
-    #else
+    root_ws->next_ws = NULL;
+    root_ws->prev_ws = NULL;
+    
+#ifdef OMP_NOWAIT_SUPPORT
     new_team->work_share[pid] = root_ws;
-    #endif
+#else
+    new_team->work_share = root_ws;
+#endif
     
     unsigned int *gtpool = (unsigned int *) (GLOBAL_INFOS_BASE);
     
