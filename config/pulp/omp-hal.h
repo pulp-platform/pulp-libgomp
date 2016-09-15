@@ -25,11 +25,19 @@
 #define NULL ((void *) 0x0) /* Standard C */
 #endif
 
+
 #include "appsupport.h"
 #include "omp-bar.h"
 #include "memutils.h"
 #include "omp-lock.h"
 #include "mutex.h"
+
+#define gomp_assert(x) \
+{\
+    if( ! (x)) {\
+        printf("[GOMP] Assert failed at file %s line %d\n",__FILE__, __LINE__); \
+    }\
+}
 
 ALWAYS_INLINE void
 perfInitAndStart()
@@ -44,6 +52,9 @@ perfInitAndStart()
 ALWAYS_INLINE void
 gomp_hal_init()
 {
+    gomp_assert(get_num_procs() <= DEFAULT_MAX_PE);
+    gomp_assert(get_num_clusters() <= DEFAULT_MAXCL);
+
     /* Set Event Line to 1 */
 #if EU_VERSION == 1
     set_evnt_mask_low( get_proc_id(), 1 ); //configure the event mask
@@ -56,10 +67,5 @@ gomp_hal_init()
 }    
 
 
-#define gomp_assert(x) \
-{\
-    if( ! (x)) {\
-        printf("[GOMP] Assert failed at file %s line %d\n",__FILE__, __LINE__); \
-    }\
-}
+
 #endif /* __HAL_H__ */

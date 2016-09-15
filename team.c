@@ -62,8 +62,6 @@ gomp_team_pool_init ( )
     gomp_team_t *team;
 
     /* Check Gomp Memory Integrity */
-    printf("%x, %x Assert %d \n", (uint32_t) &(gomp_data),  (uint32_t) LIBGOMP_BASE, (((uint32_t) &(gomp_data)) == ((uint32_t) (LIBGOMP_BASE)) ));
-    
     gomp_assert(((uint32_t) &(gomp_data) == (uint32_t) LIBGOMP_BASE));
 
     gomp_team_pool_lock_init( );

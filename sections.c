@@ -111,7 +111,7 @@ GOMP_parallel_sections_start (void (*fn) (void *), void *data, unsigned num_thre
     #else
     gomp_sections_init (new_team->work_share, count);
     #endif
-    MSGBarrier_hwRelease( new_team->team );
+    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
 }
 
 void
@@ -125,7 +125,7 @@ GOMP_parallel_sections (void (*fn) (void *), void *data, unsigned num_threads, u
     #else
     gomp_sections_init (new_team->work_share, count);
     #endif
-    MSGBarrier_hwRelease( new_team->team );
+    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
     fn(data);
     GOMP_parallel_end();
 }

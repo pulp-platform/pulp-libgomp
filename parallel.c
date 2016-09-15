@@ -36,7 +36,7 @@ GOMP_parallel_start (void *fn, void *data, int num_threads)
     /* The thread descriptor for slaves of the newly-created team */
     gomp_team_t *new_team;  
     gomp_team_start (fn, data, num_threads, &new_team);
-    MSGBarrier_hwRelease( new_team->team );
+    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
 }
 
 void
@@ -63,7 +63,7 @@ GOMP_parallel (void (*fn) (void*), void *data, int num_threads, unsigned int fla
 #endif
 
     gomp_team_start (fn, data, num_threads, &new_team);
-    MSGBarrier_hwRelease( new_team->team );
+    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
     fn(data);
     
 #ifdef PROFILE0

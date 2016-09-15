@@ -137,7 +137,7 @@ GOMP_parallel_loop_dynamic_start (void (*fn) (void *), void *data,
     #else
     gomp_loop_init(new_team->work_share, start, end, incr, chunk_size);
     #endif
-    MSGBarrier_hwRelease( new_team->team );
+    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
 }
 
 void
@@ -153,7 +153,7 @@ GOMP_parallel_loop_dynamic (void (*fn) (void *), void *data,
     #else
     gomp_loop_init(new_team->work_share, start, end, incr, chunk_size);
     #endif
-    MSGBarrier_hwRelease( new_team->team );
+    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
     fn(data);
     GOMP_parallel_end();
 }

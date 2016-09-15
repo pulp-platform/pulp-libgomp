@@ -141,7 +141,7 @@ typedef struct{
 
 typedef struct gomp_data_s
 {
-    char*                 barriers[SWBAR_SIZE];
+    char                  barriers[SWBAR_SIZE];
     global_infos_t        thread_pool_info;
     gomp_team_t *         curr_team[DEFAULT_MAX_PE];
     omp_lock_t            team_pool_lock;
@@ -232,14 +232,14 @@ gomp_get_thread_pool_idle_cores ( )
 ALWAYS_INLINE void
 gomp_set_thread_pool_idle_cores ( uint32_t idle_cores)
 {
-    gomp_data.thread_pool_info.thread_pool = idle_cores;
+    gomp_data.thread_pool_info.idle_cores = idle_cores;
 }
 
 ALWAYS_INLINE void
 gomp_atomic_add_thread_pool_idle_cores ( uint32_t nbCores)
 {
     gomp_hal_lock(&gomp_data.thread_pool_info.lock);
-    gomp_data.thread_pool_info.thread_pool += nbCores;
+    gomp_data.thread_pool_info.idle_cores += nbCores;
     gomp_hal_unlock(&gomp_data.thread_pool_info.lock);
 }
 
@@ -247,7 +247,7 @@ ALWAYS_INLINE void
 gomp_atomic_del_thread_pool_idle_cores ( uint32_t nbCores)
 {
     gomp_hal_lock(&gomp_data.thread_pool_info.lock);
-    gomp_data.thread_pool_info.thread_pool -= nbCores;
+    gomp_data.thread_pool_info.idle_cores -= nbCores;
     gomp_hal_unlock(&gomp_data.thread_pool_info.lock);
 }
 

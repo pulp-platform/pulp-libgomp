@@ -23,12 +23,12 @@
 
 /* Maximum number of clusters supported */
 #ifndef DEFAULT_MAXCL
-#define DEFAULT_MAXCL           0x4U
+#define DEFAULT_MAXCL           ( 0x1U )
 #endif
 
 /* Maximum number of PEs per-cluster supported */
 #ifndef DEFAULT_MAX_PE
-#define DEFAULT_MAX_PE          0x1U
+#define DEFAULT_MAX_PE          ( 0x8U )
 #endif
 
 /* Maximum number of processors supported */

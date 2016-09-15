@@ -46,8 +46,8 @@ omp_initenv( )
     nprocs = get_num_procs();
 
     /* Init Thread Pool Information */
-    gomp_set_thread_pool_idle_cores( nprocs );
-    gomp_set_thread_pool( 0x0U );
+    gomp_set_thread_pool_idle_cores( nprocs - 1);
+    gomp_set_thread_pool( 0x1U );
     gomp_thread_pool_lock_init();
     
     /* Init Curr Team for each threads Thread Pool Information */
@@ -60,6 +60,13 @@ omp_initenv( )
     /* Init WS Descriptor Pre-allocated Pool */
     gomp_ws_pool_init();
 
+    printf("Thread Pool Bitmask:\t%x (%x)\n", gomp_data.thread_pool_info.thread_pool, &(gomp_data.thread_pool_info.thread_pool));
+    printf("Thread Pool #Idles: \t%d (%x)\n", gomp_data.thread_pool_info.idle_cores , &(gomp_data.thread_pool_info.idle_cores ));
+    printf("Thread Pool Lock:   \t%x\n", &gomp_data.thread_pool_info.lock);
+    printf("---- Check ---\n");
+    printf("Thread Pool Bitmask:\t%x (%x)\n", GLOBAL_THREAD_POOL , &GLOBAL_THREAD_POOL );
+    printf("Thread Pool #Idles: \t%d (%x)\n", GLOBAL_IDLE_CORES  , &GLOBAL_IDLE_CORES  );
+    printf("Thread Pool Lock:   \t%x\n", GLOBAL_LOCK_ADDR);    
     return;
 }
 
@@ -74,18 +81,13 @@ omp_SPMD_worker()
     
     if (pid == MASTER_ID)
     {
-        printf("[%d-%d][omp_SPMD_worker] Enter\n", (int) get_core_id(), (int) get_cl_id());
         gomp_team_t *root_team;
         
         /* Create "main" team descriptor. This also intializes master core's curr_team descriptor */
         gomp_master_region_start( NULL, NULL, 0x0, &root_team );
 
-        printf("[%d-%d][omp_SPMD_worker] master region created\n", (int) get_core_id(), (int) get_cl_id());
-
         /* wait all the threads */
         MSGBarrier_Wait_init(root_team->nthreads, root_team->proc_ids);
-
-        printf("[%d-%d][omp_SPMD_worker] enter the main\n", (int) get_core_id(), (int) get_cl_id());
 
         /* Enter to the application Main */
         retval = main(_argc, _argv, _envp);
@@ -93,15 +95,12 @@ omp_SPMD_worker()
         /* Release All the Threads to conclude the runtime */
         for( i = 1; i < root_team->nthreads; ++i)
             gomp_set_curr_team(i, OMP_SLAVE_EXIT);
-        MSGBarrier_hwRelease( root_team->team );
+        MSGBarrier_hwRelease( root_team->team^(0x1<<root_team->proc_ids[0]) );
 
     } // MASTER
     else
     {
-
         MSGBarrier_SlaveEnter_init( pid );
-        printf("[%d-%d][omp_SPMD_worker] Slave Released\n", (int) get_core_id(), (int) get_cl_id());
-
         while (1)
         {
             volatile gomp_team_t *curr_team = (volatile gomp_team_t *) gomp_get_curr_team( pid );
