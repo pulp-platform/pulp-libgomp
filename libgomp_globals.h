@@ -73,11 +73,14 @@ typedef struct gomp_work_share_s
     uint32_t embedded;
     omp_lock_t exit_lock;
     uint32_t completed;
-    
+
+#ifdef OMP_NOWAIT_SUPPORT    
     /* This ptr point to next_ws in case you use NOWAIT constructs */
     struct gomp_work_share_s *next_ws;
+#endif    
     struct gomp_work_share_s *prev_ws;
-    
+
+
     /*This field indicates the next team descriptor on the pool of preallocated descriptor, when the current
      is not used. **/
     struct gomp_work_share_s *next_free;
@@ -176,7 +179,7 @@ gomp_data_t gomp_data __attribute__((section(".libgomp")));
 #define CURR_TEAM_SIZE          ( SIZEOF_PTR * DEFAULT_MAX_PE )
 
 //Team Descriptor Pre-allocated Pool
-#define TEAMMEM_LOCK_ADDR       ( GLOBAL_INFOS_BASE + GLOBAL_INFOS_SIZE )
+#define TEAMMEM_LOCK_ADDR       ( CURR_TEAM_ADDR + CURR_TEAM_SIZE )
 #define TEAMMEM_LOCK            ( (omp_lock_t *) (TEAMMEM_LOCK_ADDR) )
 #define TEAMMEM_LOCK_SIZE       ( SIZEOF_PTR)
 #define TEAMMEM_LOCK_WAIT()     gomp_hal_lock( TEAMMEM_LOCK )
@@ -203,8 +206,50 @@ gomp_data_t gomp_data __attribute__((section(".libgomp")));
 #define CURR_WS(pid)            ( ((gomp_team_t *) CURR_TEAM(pid))->work_share )
 #endif
 
-
+#define OMP_LIBGOMP_DEBUG
 /*** Gloabal Threads Pool APIs ***/
+ALWAYS_INLINE void
+gomp_print_thread_info ( )
+{
+#ifdef OMP_LIBGOMP_DEBUG
+    printf("---- Thread Pool ---\n");
+    printf("Thread Pool Bitmask:\t0x%08x\t(0x%08x == 0x%08x)\n", gomp_data.thread_pool_info.thread_pool,
+           &(gomp_data.thread_pool_info.thread_pool),
+           GLOBAL_INFOS_BASE);
+    printf("Thread Pool #Idles: \t  %8d\t(0x%08x == 0x%08x)\n" , gomp_data.thread_pool_info.idle_cores,
+           &(gomp_data.thread_pool_info.idle_cores ),
+           GLOBAL_IDLE_CORES_ADDR);
+    printf("Thread Pool Lock:   \t0x%08x\t(0x%08x == 0x%08x)\n", gomp_data.thread_pool_info.lock,
+           &(gomp_data.thread_pool_info.lock),
+           GLOBAL_LOCK_ADDR);
+    
+    printf("---- Team Descriptor Pool ---\n");
+    printf("Team Pointers:      \t0x%08x\t(0x%08x == 0x%08x)\n", gomp_data.curr_team,
+           &gomp_data.curr_team,
+           CURR_TEAM_ADDR);
+    printf("Team Desc Pool Lock:\t0x%08x\t(0x%08x == 0x%08x)\n", gomp_data.team_pool_lock,
+           &gomp_data.team_pool_lock,
+           TEAMMEM_LOCK_ADDR);
+    printf("Team Desc Pool List:\t0x%08x\t(0x%08x == 0x%08x)\n", gomp_data.team_pool_list,
+           &gomp_data.team_pool_list,
+           TEAMMEM_FREE_LIST_ADDR);
+    printf("Team Desc Pool Addr:\t0x%08x to 0x%08x (Last 0x%08x)\n",
+           &gomp_data.team_descriptor_pool ,
+           ((int32_t) &gomp_data.team_descriptor_pool[NUM_HW_BARRIER-1]) + sizeof(gomp_team_t),
+           (int32_t) &gomp_data.team_descriptor_pool[NUM_HW_BARRIER-1]);
+
+    printf("---- WS Descriptor Pool ---\n");
+    printf("WS Pool Lock:       \t0x%08x\t(0x%08x == 0x%08x)\n", gomp_data.ws_pool_lock,
+           &gomp_data.ws_pool_lock,
+           WSMEM_LOCK_ADDR);
+    printf("WS Desc Pool List:  \t0x%08x\t(0x%08x == 0x%08x)\n", gomp_data.ws_pool_list,
+           &gomp_data.ws_pool_list,
+           WSMEM_FREE_LIST_ADDR);
+    printf("WS Desc Pool Addr:  \t0x%08x to 0x%08x (Last 0x%08x)\n", &gomp_data.ws_descriptor_pool,
+           ((int32_t) &gomp_data.ws_descriptor_pool[MAX_WS-1]) + sizeof(gomp_work_share_t),
+           (int32_t) &gomp_data.ws_descriptor_pool[MAX_WS-1]);
+#endif
+}
 
 ALWAYS_INLINE uint32_t *
 gomp_get_thread_pool_ptr ( )
