@@ -206,7 +206,8 @@ gomp_data_t gomp_data __attribute__((section(".libgomp")));
 #define CURR_WS(pid)            ( ((gomp_team_t *) CURR_TEAM(pid))->work_share )
 #endif
 
-#define OMP_LIBGOMP_DEBUG
+// #define OMP_LIBGOMP_DEBUG
+
 /*** Gloabal Threads Pool APIs ***/
 ALWAYS_INLINE void
 gomp_print_thread_info ( )
