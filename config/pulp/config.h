@@ -19,7 +19,7 @@
 #define SIZEOF_PTR              ( 0x4U )
 #define SIZEOF_INT              ( 0x4U )
 #define SIZEOF_WORD             ( 0x4U )
-#define LIBGOMP_BASE            ( 0x0U )
+#define LIBGOMP_BASE            ( 0x8U )
 
 /* Maximum number of clusters supported */
 #ifndef DEFAULT_MAXCL

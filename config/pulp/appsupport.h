@@ -38,13 +38,21 @@ get_cl_id()
 static inline uint32_t
 get_num_procs()
 {
+#if PULP_CHIP_FAMILY == FULMINE_CHIP
   return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x12);
+#else  
+  return apb_soc_nbCores();
+#endif
 }
 
 static inline uint32_t
 get_num_clusters()
 {
- return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x10);
+#if PULP_CHIP_FAMILY == FULMINE_CHIP
+	return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x10);
+#else  
+  return apb_soc_nbClusters();
+#endif
 }
 
 /*************************************************************

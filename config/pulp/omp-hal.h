@@ -36,6 +36,7 @@
 {\
     if( ! (x)) {\
         printf("[GOMP] Assert failed at file %s line %d\n",__FILE__, __LINE__); \
+        abort();\
     }\
 }
 
