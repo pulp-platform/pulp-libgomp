@@ -95,7 +95,7 @@ MSGBarrier_hwSlaveEnter( uint32_t barrier_id)
     gomp_hal_wait_hwBarrier_buff( barrier_id );
 #else
     gomp_hal_wait_hwBarrier_buff(barrier_id);
-    gomp_hal_wait_hwEvent_buff( pid );
+    gomp_hal_wait_hwEvent_buff( );
 #endif       
 }
 
