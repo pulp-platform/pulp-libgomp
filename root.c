@@ -6,9 +6,15 @@
 #include "libgomp.h"
 
 /* SOURCES */
+#if PULP_CHIP_FAMILY == BIGPULP_CHIP
+#include "config/bigpulp/appsupport.c"
+#include "config/bigpulp/lock.c"
+#include "config/bigpulp/memutils.c"
+#else
 #include "config/pulp/appsupport.c"
 #include "config/pulp/lock.c"
 #include "config/pulp/memutils.c"
+#endif
 
 #include "barrier.c"
 #include "iter.c"                

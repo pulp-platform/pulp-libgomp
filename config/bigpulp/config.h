@@ -20,10 +20,11 @@
 #define SIZEOF_INT              ( 0x4U )
 #define SIZEOF_WORD             ( 0x4U )
 #define LIBGOMP_BASE            ( 0x8U )
+#define LIBGOMP_GBASE           (LIBGOMP_GBASE_ADDR + 0x8U)
 
 /* Maximum number of clusters supported */
 #ifndef DEFAULT_MAXCL
-#define DEFAULT_MAXCL           ( 0x1U )
+#define DEFAULT_MAXCL           ( 0x4U )
 #endif
 
 /* Maximum number of PEs per-cluster supported */

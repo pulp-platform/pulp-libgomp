@@ -41,12 +41,13 @@ char **_envp;
 ALWAYS_INLINE void
 omp_initenv( )
 {
-    uint32_t i, nprocs;
+    uint32_t i, cid, nprocs;
 
     nprocs = get_num_procs();
+    cid    = get_cl_id();
 
     /* Init Thread Pool Information */
-    gomp_set_thread_pool_idle_cores( nprocs - 1);
+    gomp_set_thread_pool_idle_cores( cid == MASTER_ID ? nprocs - 0x1U : nprocs);
     gomp_set_thread_pool( 0x1U );
     gomp_thread_pool_lock_init();
     
@@ -72,8 +73,9 @@ omp_SPMD_worker()
     uint32_t i;
     int retval = 0;
     uint32_t pid = get_proc_id();
+    uint32_t cid = get_cl_id();
     
-    if (pid == MASTER_ID)
+    if (pid == MASTER_ID && cid == MASTER_ID)
     {
         gomp_team_t *root_team;
         

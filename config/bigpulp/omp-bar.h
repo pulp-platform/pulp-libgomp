@@ -18,13 +18,12 @@
 
 /* HW Wakeup Cores */
 static inline void
-gomp_hal_hwTrigg_core( uint32_t cmask)
+gomp_hal_hwTrigg_core( uint32_t cid,
+                       uint32_t cmask)
 {
 #if EU_VERSION == 1
-	*(volatile uint32_t*) (TRIGG_BARRIER) = cmask;
-#else
-    eu_evt_trig(eu_evt_trig_addr(0), cmask);
-#endif	
+    *(volatile uint32_t*) ( get_hal_addr( cid, OFFSET_TRIGG_BARRIER )) = cmask;
+#endif
 }
 
 
@@ -34,6 +33,7 @@ typedef volatile int32_t MSGBarrier;
 
 /* Software Barriers Base Address */
 #define SWBAR_BASE_ADDR                     (LIBGOMP_BASE)
+#define SWBAR_GBASE_ADDR                    (LIBGOMP_GBASE_ADDR)
 #define SWBAR_RFLAGS_SIZE                   ((DEFAULT_MAX_PE  << Log2SizeofMSGBarrier))
 #define SWBAR_NFLAGS_SIZE                   ((DEFAULT_MAXPROC << Log2SizeofMSGBarrier))
 #define SWBAR_SIZE                          (SWBAR_RFLAGS_SIZE + SWBAR_NFLAGS_SIZE)

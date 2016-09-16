@@ -108,7 +108,8 @@ typedef struct gomp_team_s
     unsigned nthreads;
     
     /* This is the team descriptor/mask */
-    uint32_t team;
+    uint32_t team[DEFAULT_MAXCL];
+    uint32_t mcid;
 
     /* These are the local ids assigned to processors */
     uint32_t proc_ids[MAX_PARREG_THREADS];

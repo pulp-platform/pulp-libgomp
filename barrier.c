@@ -36,13 +36,16 @@ GOMP_barrier()
 #ifdef PROFILE0
     pulp_trace(TRACE_OMP_BARRIER_ENTER);
 #endif
+    
+    gomp_team_t *team; 
+    uint32_t mcid, barrier_id;
 
-    // This call for the moment is slower...25 CPU cycles compare 18
-    // gomp_hal_hwBarrier( (gomp_get_curr_team ( get_proc_id( ) ))->barrier_id );
-    gomp_hal_hwBarrier( (CURR_TEAM ( get_proc_id( ) ))->barrier_id );
+    team = gomp_get_curr_team ( get_proc_id( ) );
+    barrier_id = team->barrier_id;
+    mcid      = team->mcid;
+    gomp_hal_hwBarrier(mcid, barrier_id);
 
 #ifdef PROFILE0
     pulp_trace(TRACE_OMP_BARRIER_EXIT);
 #endif
- 
 }

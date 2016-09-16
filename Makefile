@@ -9,6 +9,7 @@ header:
 	mkdir -p $(PULP_SDK_HOME)/install/include/ompBare
 	cp *.h $(PULP_SDK_HOME)/install/include/ompBare
 	cp config/common/*.h $(PULP_SDK_HOME)/install/include/ompBare
-	cp config/pulp/*.h $(PULP_SDK_HOME)/install/include/ompBare
+	cp config/pulp/*.h $(PULP_SDK_HOME)/install/include/ompBare/pulp/
+	cp config/bigpulp/*.h $(PULP_SDK_HOME)/install/include/ompBare/bigpulp/
 	mkdir -p $(PULP_SDK_HOME)/install/include/ompNative
 	cp ompNative.h $(PULP_SDK_HOME)/install/include/ompNative/omp.h

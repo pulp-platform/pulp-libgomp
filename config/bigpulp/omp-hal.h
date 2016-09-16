@@ -55,13 +55,10 @@ gomp_hal_init()
 {
     gomp_assert(get_num_procs() <= DEFAULT_MAX_PE);
     gomp_assert(get_num_clusters() <= DEFAULT_MAXCL);
+    gomp_assert(EU_VERSION == 1);
 
     /* Set Event Line to 1 */
-#if EU_VERSION == 1
     set_evnt_mask_low( get_proc_id(), 1 ); //configure the event mask
-#else
-    eu_evt_maskSet( 0x1 << 0 );
-#endif
 
     /* Start Performance Counters */
     perfInitAndStart();

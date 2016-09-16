@@ -17,36 +17,22 @@
 
 /*** *** Low Level Event Unit APIs *** ***/
 ALWAYS_INLINE void
-gomp_hal_wait_hwBarrier_buff( uint32_t barrier_id )
+gomp_hal_wait_hwBarrier_buff( uint32_t cid,
+                              uint32_t barrier_id )
 {
-#if EU_VERSION == 1    
-    
-    *(volatile int*) (WAIT_BARRIER) =  (int) barrier_id;
-    *(volatile int*) (CORE_CLKGATE) =  0x1;
-    
+#if EU_VERSION == 1
+    *(volatile int*) ( get_hal_addr( cid, OFFSET_WAIT_BARRIER )) = (int) barrier_id;
+    *(volatile int*) ( get_hal_addr( cid, OFFSET_CORE_CLKGATE )) = 0x1;
+
     // Flush the pipeline
     #ifdef __riscv__
       asm volatile ("WFI");
     #else
     asm volatile ("l.psync");
     #endif
-    
-    *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
-#else
-    eu_bar_trig_wait_clr(eu_bar_addr(barrier_id));
+    *(volatile int*) ( get_hal_addr( cid, OFFSET_EV_BUFF_CLEAR )) = 0x1;
 #endif
 }
-
-ALWAYS_INLINE void
-gomp_hal_clear_hwBarrier_buff( )
-{
-#if EU_VERSION == 1    
-    *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
-#else
-    eu_bar_trig_wait_clr(eu_bar_addr(0));
-#endif
-}
-
 
 ALWAYS_INLINE void
 gomp_hal_set_hwBarrier( uint32_t barrier_id,
@@ -55,8 +41,6 @@ gomp_hal_set_hwBarrier( uint32_t barrier_id,
 {
 #if EU_VERSION == 1
     *(volatile uint32_t*) (SET_BARRIER_BASE + 0x4U*barrier_id) = (nthreads << 16U) + thMask;
-#else
-    eu_bar_setup_mask(eu_bar_addr(barrier_id), thMask, thMask);
 #endif
 }
 
@@ -72,43 +56,44 @@ gomp_hal_wait_hwEvent_buff( )
   asm volatile ("l.psync");
 #endif
     *(volatile int*) (EV_BUFF_CLEAR) = 0x1;
-#else
-    eu_evt_waitAndClr(1<<0);
 #endif
 }
 
 /*** *** Master Slave Barrier APIs *** ***/
 
 ALWAYS_INLINE void
-MSGBarrier_hwWait( uint32_t barrier_id,
+MSGBarrier_hwWait( uint32_t mcid,
+                   uint32_t barrier_id,
                    uint32_t nthreads,
                    uint32_t thMask)
 {
     gomp_hal_set_hwBarrier( barrier_id, nthreads, thMask);
-    gomp_hal_wait_hwBarrier_buff( barrier_id );
+    gomp_hal_wait_hwBarrier_buff( mcid, barrier_id );
 }
 
 ALWAYS_INLINE void
-MSGBarrier_hwSlaveEnter( uint32_t barrier_id)
+MSGBarrier_hwSlaveEnter( uint32_t mcid, 
+                         uint32_t barrier_id)
 {
 #if EU_VERSION == 1
-    gomp_hal_wait_hwBarrier_buff( barrier_id );
-#else
-    gomp_hal_wait_hwBarrier_buff(barrier_id);
-    gomp_hal_wait_hwEvent_buff( pid );
+    gomp_hal_wait_hwBarrier_buff( mcid, barrier_id );
 #endif
 }
 
 ALWAYS_INLINE void
-MSGBarrier_hwRelease( uint32_t thMask )
+MSGBarrier_hwRelease( uint32_t *thMask )
 {
-    gomp_hal_hwTrigg_core( thMask );
+    uint32_t cid;
+    for( cid = 0; cid < DEFAULT_MAXCL; ++cid )
+        if(thMask[cid])
+            gomp_hal_hwTrigg_core( cid, thMask[cid]);
 }
 
 ALWAYS_INLINE void
-gomp_hal_hwBarrier( uint32_t barrier_id)
+gomp_hal_hwBarrier( uint32_t mcid,
+                    uint32_t barrier_id)
 {
-    gomp_hal_wait_hwBarrier_buff( barrier_id );
+    gomp_hal_wait_hwBarrier_buff( mcid, barrier_id );
 }
 
 /** First Level Barriers **/

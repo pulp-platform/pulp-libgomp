@@ -61,7 +61,13 @@ ALWAYS_INLINE void
 gomp_sections_end ()
 {
     gomp_work_share_end_nowait();
-    gomp_hal_hwBarrier( (gomp_get_curr_team ( get_proc_id( ) ))->barrier_id );
+    gomp_team_t *team; 
+    uint32_t mcid, barrier_id;
+
+    team = gomp_get_curr_team ( get_proc_id( ) );
+    barrier_id = team->barrier_id;
+    mcid      = team->mcid;
+    gomp_hal_hwBarrier(mcid, barrier_id);
 }
 
 /**************** APIs **************************/
