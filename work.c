@@ -76,7 +76,9 @@ gomp_ws_pool_init ( )
     gomp_ws_pool_lock_init( );
     
     /* Get First Team */
-    ws = gomp_get_ws_from_pool(0x0);
+    ws = gomp_get_ws_from_pool(0x0U);
+    ws->embedded = WS_NOT_EMBEDDED;
+    ws->next_free = NULL;
 
     /* Use the First Team as list top */
     gomp_data.ws_pool_list = ws;
@@ -106,7 +108,8 @@ gomp_pull_ws_pool ( )
 
     gomp_hal_lock(&gomp_data.ws_pool_lock);
     ws = gomp_data.ws_pool_list;
-    gomp_data.ws_pool_list = ws->next_free;
+    if(ws != NULL)
+      gomp_data.ws_pool_list = ws->next_free;
     gomp_hal_unlock(&gomp_data.ws_pool_lock);
 
     return ws;
