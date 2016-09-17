@@ -104,10 +104,10 @@ gomp_pull_ws_pool ( )
 {
     gomp_work_share_t *ws = (gomp_work_share_t *) NULL;
 
-    gomp_hal_lock(&gomp_data.team_pool_lock);
+    gomp_hal_lock(&gomp_data.ws_pool_lock);
     ws = gomp_data.ws_pool_list;
     gomp_data.ws_pool_list = ws->next_free;
-    gomp_hal_unlock(&gomp_data.team_pool_lock);
+    gomp_hal_unlock(&gomp_data.ws_pool_lock);
 
     return ws;
 }

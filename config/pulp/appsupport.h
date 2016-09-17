@@ -47,7 +47,7 @@ static inline uint32_t
 get_num_procs()
 {
 #if PULP_CHIP_FAMILY != CHIP_FULMINE
-  return apb_soc_nbCores();
+  return plp_nbCores();
 #else  
   return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x12);
 #endif
@@ -57,7 +57,7 @@ static inline uint32_t
 get_num_clusters()
 {
 #if PULP_CHIP_FAMILY != CHIP_FULMINE
-  return apb_soc_nbClusters();
+  return plp_nbClusters();
 #else  
   return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x10);
 #endif
