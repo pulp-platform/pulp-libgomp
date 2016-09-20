@@ -15,11 +15,15 @@ static inline uint32_t
 get_proc_id()
 {
 #ifdef NATIVE
-    return 0x0U;
+  return 0x0U;
 #else
-	unsigned int value;
-	__asm__ ("l.mfspr\t\t%0,r0,%1" : "=r" (value) : "I" (SPR_CORE_ID));
-	return value;
+#if PULP_CHIP_FAMILY != CHIP_FULMINE
+  return plp_coreId();
+#else
+  unsigned int value;
+  __asm__ ("l.mfspr\t\t%0,r0,%1" : "=r" (value) : "I" (SPR_CORE_ID));
+  return value;
+#endif  
 #endif
 }
 
@@ -27,31 +31,35 @@ static inline uint32_t
 get_cl_id()
 {
 #ifdef NATIVE
-    return 0x0U;
+  return 0x0U;
 #else
-	unsigned int value;
-	__asm__ ("l.mfspr\t\t%0,r0,%1" : "=r" (value) : "I" (SPR_CLUSTER_ID));
-	return value;
+#if PULP_CHIP_FAMILY != CHIP_FULMINE
+  return plp_clusterId();
+#else    
+  unsigned int value;
+  __asm__ ("l.mfspr\t\t%0,r0,%1" : "=r" (value) : "I" (SPR_CLUSTER_ID));
+  return value;
+#endif
 #endif
 }
 
 static inline uint32_t
 get_num_procs()
 {
-#if PULP_CHIP_FAMILY == FULMINE_CHIP
-  return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x12);
+#if PULP_CHIP_FAMILY != CHIP_FULMINE
+  return plp_nbCores();
 #else  
-  return apb_soc_nbCores();
+  return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x12);
 #endif
 }
 
 static inline uint32_t
 get_num_clusters()
 {
-#if PULP_CHIP_FAMILY == FULMINE_CHIP
-	return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x10);
+#if PULP_CHIP_FAMILY != CHIP_FULMINE
+  return plp_nbClusters();
 #else  
-  return apb_soc_nbClusters();
+  return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x10);
 #endif
 }
 
@@ -70,5 +78,7 @@ get_num_clusters()
 #define _printstrp(a) printf("%s - Processor %d\n", a, get_proc_id())
 #define _printstrt(a) printf("%s - Time %d\n", a, get_time())
 #define _printstrn(a) printf("%s\n", a)
+
+void abort();
 
 #endif // __APPSUPPORT_H__

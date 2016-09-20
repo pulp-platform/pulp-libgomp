@@ -84,7 +84,9 @@ MSGBarrier_hwWait( uint32_t barrier_id,
                    uint32_t nthreads,
                    uint32_t thMask)
 {
+#if EU_VERSION == 1
     gomp_hal_set_hwBarrier( barrier_id, nthreads, thMask);
+#endif
     gomp_hal_wait_hwBarrier_buff( barrier_id );
 }
 
@@ -95,8 +97,8 @@ MSGBarrier_hwSlaveEnter( uint32_t barrier_id)
     gomp_hal_wait_hwBarrier_buff( barrier_id );
 #else
     gomp_hal_wait_hwBarrier_buff(barrier_id);
-    gomp_hal_wait_hwEvent_buff( pid );
-#endif
+    gomp_hal_wait_hwEvent_buff( );
+#endif       
 }
 
 ALWAYS_INLINE void
@@ -133,7 +135,7 @@ MSGBarrier_SlaveEnter_init ( uint32_t pid )
 {
     /* Notify the master I'm on the barrier */
     *(NFLAGS(pid)) = 0x1;
-    gomp_hal_wait_hwEvent_buff(/*pid*/);
+    gomp_hal_wait_hwEvent_buff( );
 }
 
 #endif /*__BAR_HW_H__*/

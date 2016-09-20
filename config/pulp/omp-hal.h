@@ -60,7 +60,7 @@ gomp_hal_init()
 #if EU_VERSION == 1
     set_evnt_mask_low( get_proc_id(), 1 ); //configure the event mask
 #else
-    eu_evt_maskSet( 0x1 << 0 );
+    eu_evt_maskSet( 1<<0 );
 #endif
 
     /* Start Performance Counters */

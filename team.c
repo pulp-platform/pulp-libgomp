@@ -62,7 +62,8 @@ gomp_team_pool_init ( )
     gomp_team_t *team;
 
     /* Check Gomp Memory Integrity */
-    gomp_assert(((uint32_t) &(gomp_data) == (uint32_t) LIBGOMP_BASE));
+    //NOTE: in aliased architecture it has some issue...
+    //gomp_assert(((uint32_t) &(gomp_data) == (uint32_t) LIBGOMP_BASE));
 
     gomp_team_pool_lock_init( );
     
@@ -100,7 +101,8 @@ gomp_pull_team_pool ( )
 
     gomp_hal_lock(&gomp_data.team_pool_lock);
     team = gomp_data.team_pool_list;
-    gomp_data.team_pool_list = team->next;
+    if(team != NULL)
+        gomp_data.team_pool_list = team->next;
     gomp_hal_unlock(&gomp_data.team_pool_lock);
     
     return team;
