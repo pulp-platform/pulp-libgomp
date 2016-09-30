@@ -37,13 +37,12 @@ GOMP_barrier()
     pulp_trace(TRACE_OMP_BARRIER_ENTER);
 #endif
     
-    gomp_team_t *team; 
-    uint32_t mcid, barrier_id;
+    uint32_t pid;
+    gomp_team_t *team;
 
-    team = gomp_get_curr_team ( get_proc_id( ) );
-    barrier_id = team->barrier_id;
-    mcid      = team->mcid;
-    gomp_hal_hwBarrier(mcid, barrier_id);
+    pid = get_proc_id();
+    team = gomp_get_curr_team ( pid );
+    gomp_hal_barrier(pid, team->proc_ids[0], team->nthreads, team->proc_ids);
 
 #ifdef PROFILE0
     pulp_trace(TRACE_OMP_BARRIER_EXIT);

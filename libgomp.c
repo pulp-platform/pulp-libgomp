@@ -52,8 +52,8 @@ omp_initenv( )
     gomp_thread_pool_lock_init();
     
     /* Init Curr Team for each threads Thread Pool Information */
-    for(i = 0; i < nprocs; ++i)
-        gomp_set_curr_team(i, (gomp_team_t *) NULL);
+    // for(i = 0; i < nprocs; ++i)
+    //     gomp_set_curr_team(i, (gomp_team_t *) NULL);
 
     /* Init Team Descriptor Pre-allocated Pool */
     gomp_team_pool_init();
@@ -73,9 +73,8 @@ omp_SPMD_worker()
     uint32_t i;
     int retval = 0;
     uint32_t pid = get_proc_id();
-    uint32_t cid = get_cl_id();
     
-    if (pid == MASTER_ID && cid == MASTER_ID)
+    if (pid == MASTER_ID)
     {
         gomp_team_t *root_team;
         
@@ -83,7 +82,7 @@ omp_SPMD_worker()
         gomp_master_region_start( NULL, NULL, 0x0, &root_team );
 
         /* wait all the threads */
-        MSGBarrier_Wait_init(root_team->nthreads, root_team->proc_ids);
+        MSGBarrier_Wait( root_team->nthreads, root_team->proc_ids );
 
         /* Enter to the application Main */
         retval = main(_argc, _argv, _envp);
@@ -91,12 +90,13 @@ omp_SPMD_worker()
         /* Release All the Threads to conclude the runtime */
         for( i = 1; i < root_team->nthreads; ++i)
             gomp_set_curr_team(i, OMP_SLAVE_EXIT);
-        MSGBarrier_hwRelease( root_team->team^(0x1<<root_team->proc_ids[0]) );
+
+        MSGBarrier_Release(root_team->nthreads, root_team->proc_ids );
 
     } // MASTER
     else
     {
-        MSGBarrier_SlaveEnter_init( pid );
+        MSGBarrier_SlaveEnter( MASTER_ID, pid );
         while (1)
         {
             volatile gomp_team_t *curr_team = (volatile gomp_team_t *) gomp_get_curr_team( pid );
@@ -113,18 +113,18 @@ omp_SPMD_worker()
                 volatile task_f * omp_task_f;
                 volatile int **omp_args;
 
-#ifdef PROFILE0
+                #ifdef PROFILE0
                 pulp_trace(TRACE_OMP_PARALLEL_ENTER);
-#endif
+                #endif
                 omp_task_f = (void*) (&curr_team->omp_task_f);
                 omp_args = (void*) (&curr_team->omp_args);
                 (**omp_task_f)((int) *omp_args);
 
-#ifdef PROFILE0
+                #ifdef PROFILE0
                 pulp_trace(TRACE_OMP_PARALLEL_EXIT);
-#endif
+                #endif
             }
-            MSGBarrier_hwSlaveEnter( curr_team->barrier_id );
+            MSGBarrier_SlaveEnter( curr_team->proc_ids[0], pid );
         }
     }
     

@@ -7,7 +7,7 @@
 void
 gomp_hal_mem_init( )
 {
-	uint32_t i;
-	for (i = 0; i < get_num_procs(); ++i)
-		*NFLAGS(i) = 0x0U;
+  uint32_t i;
+  for (i = 0; i < get_num_procs(); ++i)
+    *LNFLAGS(i) = 0x0U;
 }

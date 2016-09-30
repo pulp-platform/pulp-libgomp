@@ -27,8 +27,8 @@
                 Alessandro Capotondi - alessandro.capotondi@unibo.it
    info         #pragma omp parallel implementation */
 
+#include <pulp.h>
 #include "libgomp.h"
-#include "pulp.h"
 
 void
 GOMP_parallel_start (void *fn, void *data, int num_threads)
@@ -36,7 +36,7 @@ GOMP_parallel_start (void *fn, void *data, int num_threads)
     /* The thread descriptor for slaves of the newly-created team */
     gomp_team_t *new_team;  
     gomp_team_start (fn, data, num_threads, &new_team);
-    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
+    MSGBarrier_Release( new_team->nthreads, new_team->proc_ids );
 }
 
 void
@@ -44,7 +44,7 @@ GOMP_parallel_end (void)
 {
     uint32_t pid  = get_proc_id();
     gomp_team_t *team = (gomp_team_t *) gomp_get_curr_team(pid);
-    MSGBarrier_hwWait( team->barrier_id, team->nthreads, 0x1U<<pid );
+    MSGBarrier_Wait( team->nthreads, team->proc_ids );
     gomp_team_end();
 }
 
@@ -63,7 +63,7 @@ GOMP_parallel (void (*fn) (void*), void *data, int num_threads, unsigned int fla
 #endif
 
     gomp_team_start (fn, data, num_threads, &new_team);
-    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
+    MSGBarrier_Release( new_team->nthreads, new_team->proc_ids);
     fn(data);
     
 #ifdef PROFILE0

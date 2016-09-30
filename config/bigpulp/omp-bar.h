@@ -32,12 +32,15 @@ typedef volatile int32_t MSGBarrier;
 #define Log2SizeofMSGBarrier (2U)
 
 /* Software Barriers Base Address */
-#define SWBAR_BASE_ADDR                     (LIBGOMP_BASE)
-#define SWBAR_GBASE_ADDR                    (LIBGOMP_GBASE_ADDR)
-#define SWBAR_RFLAGS_SIZE                   ((DEFAULT_MAX_PE  << Log2SizeofMSGBarrier))
-#define SWBAR_NFLAGS_SIZE                   ((DEFAULT_MAXPROC << Log2SizeofMSGBarrier))
-#define SWBAR_SIZE                          (SWBAR_RFLAGS_SIZE + SWBAR_NFLAGS_SIZE)
-#define SWBAR_ID                            (0xFFFFFFFFU)
+#define SWBAR_BASE_ADDR                     ( LIBGOMP_BASE )
+
+/* Local Aliased Address */
+#define SWBAR_LBASE_ADDR                    ( LIBGOMP_LBASE )
+
+#define SWBAR_RFLAGS_SIZE                   (( DEFAULT_MAX_PE  << Log2SizeofMSGBarrier ))
+#define SWBAR_NFLAGS_SIZE                   (( DEFAULT_MAXPROC << Log2SizeofMSGBarrier ))
+#define SWBAR_SIZE                          ( SWBAR_RFLAGS_SIZE + SWBAR_NFLAGS_SIZE )
+#define SWBAR_ID                            ( 0xFFFFFFFFU )
 
 #include "bar-sw.h"
 #include "bar-hw.h"

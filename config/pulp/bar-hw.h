@@ -21,7 +21,7 @@ gomp_hal_wait_hwBarrier_buff( uint32_t barrier_id )
 {
 #if EU_VERSION == 1    
     
-    *(volatile int*) (WAIT_BARRIER) =  (int) barrier_id;
+    *(volatile int*) (WAIT_BARRIER) =  barrier_id;
     *(volatile int*) (CORE_CLKGATE) =  0x1;
     
     // Flush the pipeline
@@ -98,7 +98,7 @@ MSGBarrier_hwSlaveEnter( uint32_t barrier_id)
 #else
     gomp_hal_wait_hwBarrier_buff(barrier_id);
     gomp_hal_wait_hwEvent_buff( );
-#endif       
+#endif
 }
 
 ALWAYS_INLINE void

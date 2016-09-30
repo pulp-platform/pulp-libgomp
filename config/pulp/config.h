@@ -36,17 +36,6 @@
 #define DEFAULT_MAXPROC         DEFAULT_MAXCL*DEFAULT_MAX_PE
 #endif
 
-
-//------------------------------------------------------------------------------
-// Hardwired Event Unit Offsets 
-//------------------------------------------------------------------------------
-
-#define OFFSET_EV_BUFF_CLEAR   (0x0400U + 0x0004U)
-#define OFFSET_CORE_CLKGATE    (0x0400U + 0x000CU)
-
-#define OFFSET_TRIGG_BARRIER   (0x0800U + 0x035CU)
-#define OFFSET_WAIT_BARRIER    (0x0800U + 0x036CU)
-
 #ifdef __riscv__
 #define PCER_ALL_EVENTS_MASK CSR_PCER_ALL_EVENTS_MASK
 #define PCMR_ACTIVE CSR_PCMR_ACTIVE

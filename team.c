@@ -271,7 +271,6 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         } // if
     } // for
     
-    gomp_hal_set_hwBarrier(new_team->barrier_id, new_team->nthreads, new_team->team);
     GLOBAL_INFOS_SIGNAL();
     
     /* Update the parent team field */

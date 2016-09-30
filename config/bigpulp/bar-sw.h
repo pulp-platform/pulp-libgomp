@@ -10,43 +10,27 @@
 
 #include "bar.h"
 
-/* Per-Core FLAG OFFSET */
-#define FLAG_OFFSET(x)                      (x << Log2SizeofMSGBarrier)
-
-/* Software Wait Barrier */
-#define RFLAGS(x)                           (volatile MSGBarrier *) ((uint32_t) SWBAR_BASE_ADDR + FLAG_OFFSET(x))
-/* Software Notification Barrier */
-#define NFLAGS(x)                           (volatile MSGBarrier *) ((uint32_t) SWBAR_BASE_ADDR + SWBAR_RFLAGS_SIZE + FLAG_OFFSET(x))
-
-//FIXME: for the moment the sw barriers are not supported
-#if 0
-
-/* Software Wait Barrier */
-#define GRFLAGS(x,y)                        (volatile MSGBarrier *) (GRFLAGS_BASE(x) + FLAG_OFFSET(y))
-/* Software Notification Barrier */
-#define GNFLAGS(x,y)                        (volatile MSGBarrier *) (GNFLAGS_BASE(x) + FLAG_OFFSET(y))
-
 /* Global RFLAGS base address */
 ALWAYS_INLINE uint32_t
-GRFLAGS_BASE(uint32_t cid)
+RFLAGS_BASE( uint32_t cid )
 {
     uint32_t ret;
-    switch(cid)
+    switch( cid )
     {
         case 0x0U:
-            ret = SWBAR_GBASE_ADDR + ( PULP_CLUSTER_SIZE * 0x0U );
+            ret = SWBAR_BASE_ADDR + ( CLUSTER_OFFSET * 0x0U );
             break;
         case 0x1U:
-            ret = SWBAR_GBASE_ADDR + ( PULP_CLUSTER_SIZE * 0x1U );
+            ret = SWBAR_BASE_ADDR + ( CLUSTER_OFFSET * 0x1U );
             break;
         case 0x2U:
-            ret = SWBAR_GBASE_ADDR + ( PULP_CLUSTER_SIZE * 0x2U );
+            ret = SWBAR_BASE_ADDR + ( CLUSTER_OFFSET * 0x2U );
             break;
         case 0x3U:
-            ret = SWBAR_GBASE_ADDR + ( PULP_CLUSTER_SIZE * 0x3U );
+            ret = SWBAR_BASE_ADDR + ( CLUSTER_OFFSET * 0x3U );
             break;
         default:
-            ret = SWBAR_GBASE_ADDR + ( PULP_CLUSTER_SIZE * 0x0U );
+            ret = SWBAR_BASE_ADDR + ( CLUSTER_OFFSET * 0x0U );
             break;
     }
     return ret;
@@ -54,94 +38,109 @@ GRFLAGS_BASE(uint32_t cid)
 
 /* Global NFLAGS base address */
 ALWAYS_INLINE uint32_t
-GNFLAGS_BASE(uint32_t cid)
+NFLAGS_BASE( uint32_t cid )
 {
     uint32_t ret;
-    switch(cid)
+    switch( cid )
     {
         case 0x0U:
-            ret = SWBAR_GBASE_ADDR + SWBAR_RFLAGS_SIZE + ( PULP_CLUSTER_SIZE * 0x0U );
+            ret = SWBAR_BASE_ADDR + SWBAR_RFLAGS_SIZE + ( CLUSTER_OFFSET * 0x0U );
             break;
         case 0x1U:
-            ret = SWBAR_GBASE_ADDR + SWBAR_RFLAGS_SIZE + ( PULP_CLUSTER_SIZE * 0x1U );
+            ret = SWBAR_BASE_ADDR + SWBAR_RFLAGS_SIZE + ( CLUSTER_OFFSET * 0x1U );
             break;
         case 0x2U:
-            ret = SWBAR_GBASE_ADDR + SWBAR_RFLAGS_SIZE + ( PULP_CLUSTER_SIZE * 0x2U );
+            ret = SWBAR_BASE_ADDR + SWBAR_RFLAGS_SIZE + ( CLUSTER_OFFSET * 0x2U );
             break;
         case 0x3U:
-            ret = SWBAR_GBASE_ADDR + SWBAR_RFLAGS_SIZE + ( PULP_CLUSTER_SIZE * 0x3U );
+            ret = SWBAR_BASE_ADDR + SWBAR_RFLAGS_SIZE + ( CLUSTER_OFFSET * 0x3U );
             break;
         default:
-            ret = SWBAR_GBASE_ADDR + SWBAR_RFLAGS_SIZE + ( PULP_CLUSTER_SIZE * 0x0U );
+            ret = SWBAR_BASE_ADDR + SWBAR_RFLAGS_SIZE + ( CLUSTER_OFFSET * 0x0U );
             break;
     }
     return ret;
 }
 
+/* Per-Core FLAG OFFSET */
+#define FLAG_OFFSET( x )            ( x << Log2SizeofMSGBarrier )
+
+/* Aliased Local Software Wait Barrier */
+#define LRFLAGS( pid )              ((volatile MSGBarrier *) ((uint32_t) SWBAR_LBASE_ADDR + FLAG_OFFSET( pid & 0x07U )))
+/* Aliased Local Software Notification Barrier */
+#define LNFLAGS( pid )              ((volatile MSGBarrier *) ((uint32_t) SWBAR_LBASE_ADDR + SWBAR_RFLAGS_SIZE + FLAG_OFFSET( pid )))
+
+/* Software Wait Barrier */
+#define RFLAGS( pid )               ((volatile MSGBarrier *) ( RFLAGS_BASE( pid >> 0x03U ) + FLAG_OFFSET( pid & 0x07U ) ))
+/* Software Notification Barrier */
+#define NFLAGS( mpid, pid )         ((volatile MSGBarrier *) ( NFLAGS_BASE( mpid >> 0x03U ) + FLAG_OFFSET( pid ) ))
+
 /*** *** Master Slave Barrier APIs *** ***/
 ALWAYS_INLINE void
 MSGBarrier_Wait( uint32_t nthreads,
-                 uint32_t *slave_ids)
+                 uint32_t * restrict slave_ids )
 {     
     uint32_t i;
     for( i = 1; i < nthreads; ++i )
     {
         uint32_t slave_id = slave_ids[i];
-        while( !(*(NFLAGS(slave_id))) )
+        while( !(*(LNFLAGS( slave_id )) != 0x1U ) )
             continue;
 
         /* Reset flag */
-        *(NFLAGS(slave_id)) = 0x0U;
+        *(LNFLAGS( slave_id )) = 0x0U;
     }
 }
 
 ALWAYS_INLINE void
-MSGBarrier_SlaveEnter(uint32_t mcid,
-                      uint32_t pid)
+MSGBarrier_SlaveEnter ( uint32_t pid,
+                        uint32_t mpid )
 {
-    volatile MSGBarrier *rflag = RFLAGS( pid );
+    volatile MSGBarrier *rflag = LRFLAGS( pid );
+    
     /* Read start value */
     volatile MSGBarrier  old_val = *rflag;
     
     /* Notify the master I'm on the barrier */
-    *(GNFLAGS(mcid, pid)) = 0x1U;
+    *(NFLAGS( mpid, pid )) = 0x1U;
             
     while(1)
     {
-        volatile MSGBarrier *curr_val = RFLAGS( pid );
+        volatile MSGBarrier *curr_val = LRFLAGS( pid );
         if (old_val == *curr_val)
             continue;
         break;
+    }    
+}
+
+ALWAYS_INLINE void
+MSGBarrier_Release( uint32_t nthreads,
+                    uint32_t * restrict slave_ids )
+{
+    uint32_t i;
+    for( i = 1; i < nthreads; ++i )
+    {
+        uint32_t slave_id = slave_ids[i];
+        volatile MSGBarrier *rflag = RFLAGS( slave_id );
+        (*rflag)++;
     }
 }
 
 ALWAYS_INLINE void
-MSGBarrier_Release( uint32_t *tmasks )
-{
-    uint32_t cid;
-    for( cid = 0; cid < DEFAULT_MAXCL; ++cid )
-        if(tmasks[cid])
-            gomp_hal_hwTrigg_core( cid, tmasks[cid] );
-}
-
-ALWAYS_INLINE void
-gomp_hal_barrier( uint32_t mcid,
+gomp_hal_barrier( uint32_t pid,
+                  uint32_t mpid,
                   uint32_t nthreads,
-                  uint32_t *slave_ids,
-                  uint32_t *tmasks)
+                  uint32_t * restrict slave_ids )
 {
-    uint32_t pid = get_proc_id();
-
-    if(slave_ids[0] != pid)
+    if( pid == mpid )
     {
-        MSGBarrier_SlaveEnter( mcid, pid );
+        MSGBarrier_Wait( nthreads, slave_ids);
+        MSGBarrier_Release( nthreads, slave_ids);
     }
     else
     {
-        MSGBarrier_Wait( nthreads, slave_ids );
-        MSGBarrier_Release( tmasks);
+        MSGBarrier_SlaveEnter( mpid, pid );
     }
 }
-#endif
 
 #endif /*__BAR_SW_H__*/

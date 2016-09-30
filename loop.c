@@ -63,13 +63,13 @@ ALWAYS_INLINE void
 gomp_loop_end()
 {
     gomp_work_share_end_nowait();
-    gomp_team_t *team; 
-    uint32_t mcid, barrier_id;
 
-    team = gomp_get_curr_team ( get_proc_id( ) );
-    barrier_id = team->barrier_id;
-    mcid      = team->mcid;
-    gomp_hal_hwBarrier(mcid, barrier_id);
+    uint32_t pid;
+    gomp_team_t *team;
+
+    pid = get_proc_id();
+    team = gomp_get_curr_team ( pid );
+    gomp_hal_barrier(pid, team->proc_ids[0], team->nthreads, team->proc_ids);
 }
 
 
@@ -143,7 +143,7 @@ GOMP_parallel_loop_dynamic_start (void (*fn) (void *), void *data,
     #else
     gomp_loop_init(new_team->work_share, start, end, incr, chunk_size);
     #endif
-    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
+    MSGBarrier_Release( new_team->nthreads, new_team->proc_ids );
 }
 
 void
@@ -159,7 +159,7 @@ GOMP_parallel_loop_dynamic (void (*fn) (void *), void *data,
     #else
     gomp_loop_init(new_team->work_share, start, end, incr, chunk_size);
     #endif
-    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
+    MSGBarrier_Release( new_team->nthreads, new_team->proc_ids);
     fn(data);
     GOMP_parallel_end();
 }
