@@ -16,16 +16,7 @@
 #include "events_ids.h"
 #endif
 
-/* HW Wakeup Cores */
-static inline void
-gomp_hal_hwTrigg_core( uint32_t cid,
-                       uint32_t cmask)
-{
-#if EU_VERSION == 1
-    *(volatile uint32_t*) ( get_hal_addr( cid, OFFSET_TRIGG_BARRIER )) = cmask;
-#endif
-}
-
+// #define OMP_BAR_DEBUG
 
 /* Software Barriers Data Type */
 typedef volatile int32_t MSGBarrier;
@@ -42,7 +33,46 @@ typedef volatile int32_t MSGBarrier;
 #define SWBAR_SIZE                          ( SWBAR_RFLAGS_SIZE + SWBAR_NFLAGS_SIZE )
 #define SWBAR_ID                            ( 0xFFFFFFFFU )
 
+/* HW Wakeup Cores */
+static inline void
+gomp_hal_hwTrigg_core( uint32_t cmask)
+{
+#if EU_VERSION == 1
+    // *(volatile uint32_t*) ( get_hal_addr( cid, OFFSET_TRIGG_BARRIER )) = cmask;
+    *(volatile uint32_t*) ( TRIGG_BARRIER ) = cmask;
+    // *(volatile uint32_t*) ( get_hal_addr( get_cl_id(), OFFSET_EVENT0 )) = cmask;
+
+#ifdef OMP_BAR_DEBUG
+        printf("[%d][%d][gomp_hal_hwTrigg_core] Trigger %x at 0x%x\n", get_proc_id(), get_cl_id(), cmask, get_hal_addr( get_cl_id(), OFFSET_EVENT0 ));
+#endif
+#else
+#error BigPulp supports only EU_VERSION==1!
+	 eu_evt_trig(eu_evt_trig_addr(0), cmask);
+#endif
+}
+
 #include "bar-sw.h"
 #include "bar-hw.h"
+
+/* HW Wakeup Cores */
+static inline void
+gomp_hal_hwTrigg_Team( uint32_t cid)
+{
+#if EU_VERSION == 1
+//     *(volatile uint32_t*) ( get_hal_addr( cid, OFFSET_EVENT0 )) = 0x1;
+// #ifdef OMP_BAR_DEBUG
+//         printf("[%d][%d][gomp_hal_hwTrigg_Team] Trigger %x at 0x%x\n", get_proc_id(), get_cl_id(), 0x1, get_hal_addr( cid, OFFSET_EVENT0 ));
+// #endif
+
+	volatile MSGBarrier *rflag = ((volatile MSGBarrier *) ( RFLAGS_BASE( cid )));
+#ifdef OMP_BAR_DEBUG
+	printf("[%d][%d][gomp_hal_hwTrigg_Team] Trigger %x at 0x%x\n", get_proc_id(), get_cl_id(), 0x1, rflag);
+#endif	
+    (*rflag)++;
+#else
+#error BigPulp supports only EU_VERSION==1!
+	 eu_evt_trig(eu_evt_trig_addr(0), cmask);
+#endif
+}
 
 #endif /*__BAR_H__*/

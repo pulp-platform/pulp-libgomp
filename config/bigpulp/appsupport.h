@@ -2,7 +2,7 @@
    author       DEI - Universita' di Bologna
                 Alessandro Capotondi - alessandro.capotondi@unibo.it
                 Germain Haugou - haugoug@iis.ee.ethz.ch
-    Andrea Marongiu - a.marongiu@unibo.it
+		Andrea Marongiu - a.marongiu@unibo.it
    info         Appsupport for PULP */
 
 #ifndef __APPSUPPORT_H__
@@ -12,7 +12,7 @@
 #include <hal/pulp.h>
 
 static inline uint32_t
-get_local_proc_id( )
+get_proc_id( )
 {
 #ifdef NATIVE
   return 0x0U;
@@ -44,7 +44,7 @@ get_cl_id( )
 }
 
 static inline uint32_t
-get_local_num_procs( )
+get_num_procs()
 {
 #if PULP_CHIP_FAMILY != CHIP_FULMINE
   return plp_nbCores();
@@ -61,18 +61,6 @@ get_num_clusters()
 #else  
   return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x10);
 #endif
-}
-
-static inline uint32_t
-get_proc_id ( )
-{
-  return get_local_proc_id( ) + get_cl_id( ) * get_local_num_procs( );
-}
-
-static inline uint32_t
-get_num_procs ( )
-{
-  return get_num_clusters( ) * get_local_num_procs( );
 }
 
 /*************************************************************
@@ -92,6 +80,19 @@ get_num_procs ( )
 #define _printstrn(a) printf("%s\n", a)
 
 void abort( );
+
+
+static inline uint32_t
+get_global_proc_id ( )
+{
+  return get_proc_id( ) + get_cl_id( ) * get_num_procs( );
+}
+
+static inline uint32_t
+get_global_num_procs ( )
+{
+  return get_num_clusters( ) * get_num_procs( );
+}
 
 static inline uint32_t
 get_cluster_base( uint32_t cid )

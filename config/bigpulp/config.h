@@ -35,7 +35,7 @@
 
 /* Maximum number of processors supported */
 #ifndef DEFAULT_MAXPROC
-#define DEFAULT_MAXPROC         ( DEFAULT_MAXCL * DEFAULT_MAX_PE )
+#define DEFAULT_MAXPROC         ( DEFAULT_MAX_PE )
 #endif
 
 #ifdef __riscv__
@@ -48,8 +48,6 @@
 #define PCMR_SATURATE SPR_PCMR_SATURATE
 #endif
 
-
-
 //------------------------------------------------------------------------------
 // Hardwired Event Unit Offsets 
 //------------------------------------------------------------------------------
@@ -58,6 +56,7 @@
 #define OFFSET_CORE_CLKGATE    ( 0x0400U + 0x000CU )
 
 #define OFFSET_TRIGG_BARRIER   ( 0x0800U + 0x035CU )
+#define OFFSET_EVENT0          ( 0x0800U + 0X0360U )
 #define OFFSET_WAIT_BARRIER    ( 0x0800U + 0x036CU )
 
 #endif

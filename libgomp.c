@@ -41,19 +41,21 @@ char **_envp;
 ALWAYS_INLINE void
 omp_initenv( )
 {
-    uint32_t i, cid, nprocs;
+    uint32_t i, nprocs;
 
     nprocs = get_num_procs();
-    cid    = get_cl_id();
+
+    nteams = 1;
+    threadLimit = DEFAULT_MAX_PE;
 
     /* Init Thread Pool Information */
-    gomp_set_thread_pool_idle_cores( cid == MASTER_ID ? nprocs - 0x1U : nprocs);
+    gomp_set_thread_pool_idle_cores( nprocs - 1);
     gomp_set_thread_pool( 0x1U );
     gomp_thread_pool_lock_init();
     
     /* Init Curr Team for each threads Thread Pool Information */
-    // for(i = 0; i < nprocs; ++i)
-    //     gomp_set_curr_team(i, (gomp_team_t *) NULL);
+    for(i = 0; i < nprocs; ++i)
+        gomp_set_curr_team(i, (gomp_team_t *) NULL);
 
     /* Init Team Descriptor Pre-allocated Pool */
     gomp_team_pool_init();
@@ -76,27 +78,51 @@ omp_SPMD_worker()
     
     if (pid == MASTER_ID)
     {
-        gomp_team_t *root_team;
-        
-        /* Create "main" team descriptor. This also intializes master core's curr_team descriptor */
-        gomp_master_region_start( NULL, NULL, 0x0, &root_team );
+        if(get_cl_id() == 0){
+            gomp_team_t *root_team;
+            
+            /* Create "main" team descriptor. This also intializes master core's curr_team descriptor */
+            gomp_master_region_start( NULL, NULL, 0x0, &root_team );
+    
+            /* wait all the threads */
+            MSGBarrier_Wait( root_team->nthreads, root_team->proc_ids );
+    
+            /* Enter to the application Main */
+            retval = main(_argc, _argv, _envp);
+    
+            /* Release All the Threads to conclude the runtime */
+            for( i = 1; i < root_team->nthreads; ++i)
+                gomp_set_curr_team(i, OMP_SLAVE_EXIT);
+            
+             MSGBarrier_hwRelease( root_team->team^(0x1<<pid) );
+         }
+         else
+         {
+            MSGBarrier_swDocking( pid );
+            while (1)
+            {
+                volatile gomp_team_t *curr_team = (volatile gomp_team_t *) gomp_get_curr_team( pid );
 
-        /* wait all the threads */
-        MSGBarrier_Wait( root_team->nthreads, root_team->proc_ids );
-
-        /* Enter to the application Main */
-        retval = main(_argc, _argv, _envp);
-
-        /* Release All the Threads to conclude the runtime */
-        for( i = 1; i < root_team->nthreads; ++i)
-            gomp_set_curr_team(i, OMP_SLAVE_EXIT);
-
-        MSGBarrier_Release(root_team->nthreads, root_team->proc_ids );
-
+                /* Exit runtime loop... */
+                if ( curr_team ==  OMP_SLAVE_EXIT) 
+                {
+                    // we are done!!
+                    break;
+                }      
+                /* Have work! */
+                else
+                {
+                  targetFn(targetData);
+                }
+                MSGBarrier_swDocking( pid );
+            }
+        }
     } // MASTER
     else
     {
-        MSGBarrier_SlaveEnter( MASTER_ID, pid );
+        MSGBarrier_hwDocking( pid );
+        printf("Good Morning %d %d\n", get_cl_id(), get_proc_id());
+
         while (1)
         {
             volatile gomp_team_t *curr_team = (volatile gomp_team_t *) gomp_get_curr_team( pid );
@@ -124,7 +150,7 @@ omp_SPMD_worker()
                 pulp_trace(TRACE_OMP_PARALLEL_EXIT);
                 #endif
             }
-            MSGBarrier_SlaveEnter( curr_team->proc_ids[0], pid );
+            MSGBarrier_hwSlaveEnter( curr_team->barrier_id );
         }
     }
     

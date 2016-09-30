@@ -79,68 +79,96 @@ NFLAGS_BASE( uint32_t cid )
 ALWAYS_INLINE void
 MSGBarrier_Wait( uint32_t nthreads,
                  uint32_t * restrict slave_ids )
-{     
+{
     uint32_t i;
     for( i = 1; i < nthreads; ++i )
     {
         uint32_t slave_id = slave_ids[i];
-        while( !(*(LNFLAGS( slave_id )) != 0x1U ) )
+
+#ifdef OMP_BAR_DEBUG
+        printf("[%d][%d][MSGBarrier_Wait] Waiting %d at 0x%x (%x)\n", get_proc_id(), get_cl_id(), slave_id, LNFLAGS( slave_id ), *(LNFLAGS( slave_id )));
+#endif        
+        while( *(LNFLAGS( slave_id )) != 0x1U )
             continue;
 
         /* Reset flag */
         *(LNFLAGS( slave_id )) = 0x0U;
+
+#ifdef OMP_BAR_DEBUG
+        printf("[%d][%d][MSGBarrier_Wait] Arrived %d\n", get_proc_id(), get_cl_id(), slave_id);
+#endif
     }
 }
 
 ALWAYS_INLINE void
-MSGBarrier_SlaveEnter ( uint32_t pid,
-                        uint32_t mpid )
-{
-    volatile MSGBarrier *rflag = LRFLAGS( pid );
+MSGBarrier_swDocking ( uint32_t pid )
+{    
+    /* Notify the master I'm on the barrier */
+    *(LNFLAGS(pid)) = 0x1U;
+        
+#ifdef OMP_BAR_DEBUG
+    printf("[%d][%d][MSGBarrier_swDocking] Arrived %d at 0x%x (%x)\n", get_proc_id(), get_cl_id(), pid, LNFLAGS( pid ), *(LNFLAGS( pid )));
+#endif
     
+    volatile MSGBarrier *rflag = LRFLAGS( pid );
     /* Read start value */
     volatile MSGBarrier  old_val = *rflag;
-    
-    /* Notify the master I'm on the barrier */
-    *(NFLAGS( mpid, pid )) = 0x1U;
-            
+    /*Notify the master I'm on the barrier */
+    *(LNFLAGS( pid )) = 0x1U;
     while(1)
     {
         volatile MSGBarrier *curr_val = LRFLAGS( pid );
         if (old_val == *curr_val)
             continue;
         break;
-    }    
+    }  
 }
 
-ALWAYS_INLINE void
-MSGBarrier_Release( uint32_t nthreads,
-                    uint32_t * restrict slave_ids )
-{
-    uint32_t i;
-    for( i = 1; i < nthreads; ++i )
-    {
-        uint32_t slave_id = slave_ids[i];
-        volatile MSGBarrier *rflag = RFLAGS( slave_id );
-        (*rflag)++;
-    }
-}
+// ALWAYS_INLINE void
+// MSGBarrier_SlaveEnter ( uint32_t pid )
+// {
+//     volatile MSGBarrier *rflag = LRFLAGS( pid );
+//     /* Read start value */
+//     volatile MSGBarrier  old_val = *rflag;
+//      Notify the master I'm on the barrier 
+//     *(LNFLAGS( pid )) = 0x1U;
+//     while(1)
+//     {
+//         volatile MSGBarrier *curr_val = LRFLAGS( pid );
+//         if (old_val == *curr_val)
+//             continue;
+//         break;
+//     }    
+// }
 
-ALWAYS_INLINE void
-gomp_hal_barrier( uint32_t pid,
-                  uint32_t mpid,
-                  uint32_t nthreads,
-                  uint32_t * restrict slave_ids )
-{
-    if( pid == mpid )
-    {
-        MSGBarrier_Wait( nthreads, slave_ids);
-        MSGBarrier_Release( nthreads, slave_ids);
-    }
-    else
-    {
-        MSGBarrier_SlaveEnter( mpid, pid );
-    }
-}
+// ALWAYS_INLINE void
+// MSGBarrier_Release( uint32_t nthreads,
+//                     uint32_t * restrict slave_ids )
+// {
+//     uint32_t i;
+//     for( i = 1; i < nthreads; ++i )
+//     {
+//         uint32_t slave_id = slave_ids[i];
+//         volatile MSGBarrier *rflag = RFLAGS( slave_id );
+//         (*rflag)++;
+//     }
+// }
+
+// ALWAYS_INLINE void
+// gomp_hal_barrier( uint32_t pid,
+//                   uint32_t mpid,
+//                   uint32_t nthreads,
+//                   uint32_t * restrict slave_ids )
+// {
+//     if( pid == mpid )
+//     {
+//         MSGBarrier_Wait( nthreads, slave_ids);
+//         MSGBarrier_Release( nthreads, slave_ids);
+//     }
+//     else
+//     {
+//         MSGBarrier_SlaveEnter( mpid, pid );
+//     }
+// }
 
 #endif /*__BAR_SW_H__*/

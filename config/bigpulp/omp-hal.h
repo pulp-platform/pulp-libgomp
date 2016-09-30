@@ -59,7 +59,7 @@ gomp_hal_init()
 
     /* Set Event Line to 1 */
 #if EU_VERSION == 1
-    set_evnt_mask_low( get_local_proc_id(), 1 ); //configure the event mask
+    set_evnt_mask_low( get_proc_id(), 1 ); //configure the event mask
 #else
     eu_evt_maskSet( 1<<0 );
 #endif

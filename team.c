@@ -113,7 +113,7 @@ gomp_pull_team_pool ( )
 ALWAYS_INLINE gomp_team_t *
 gomp_malloc_team()
 {
-    gomp_team_t *new_team;
+    gomp_team_t *new_team
     new_team = (gomp_team_t *) shmalloc( sizeof(gomp_team_t) );
     new_team->next = NULL;
     return new_team;
@@ -162,18 +162,16 @@ gomp_master_region_start ( __attribute__((unused)) void *fn,
                            __attribute__((unused)) int specified,
                                                    gomp_team_t **team)
 {
-    uint32_t i, nprocs, nclusters;
+    uint32_t i, nprocs;
     gomp_team_t *new_team;
 
     nprocs    = get_num_procs();
-    nclusters = get_num_clusters();
     
     /* Create the team descriptor for current parreg */
     new_team = gomp_new_team();
 
     new_team->nthreads = nprocs;
-    for(i = 0; i < nclusters; ++i)
-        new_team->team[i] = 0xFFU;
+    new_team->team = 0xFFU;
 
     for (i = 0; i < nprocs; ++i)
         new_team->proc_ids[i] = i;
@@ -210,14 +208,14 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     new_team->omp_task_f = (void *)(fn);
     new_team->omp_args = data;
     new_team->nthreads = num_threads; // also the master
-    
-    new_team->team[0] = 0x0;
+
+    new_team->team = 0x0U;
     
     /* Use the global array to fetch idle cores */
     local_id_gen = 1; // '0' is master
     
     num_threads--; // Decrease NUM_THREADS to account for the master
-    new_team->team[0] |= (1 << pid);
+    new_team->team |= (1 << pid);
     new_team->thread_ids[pid] = 0;
     new_team->proc_ids[0] = pid;
     
@@ -253,7 +251,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         {
             *gtpool |= mask;
             
-            new_team->team[0] |= mask;
+            new_team->team |= mask;
             
             new_team->proc_ids[local_id_gen] = i;
             
@@ -271,6 +269,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         } // if
     } // for
     
+    gomp_hal_set_hwBarrier(new_team->barrier_id, new_team->nthreads, new_team->team);
     GLOBAL_INFOS_SIGNAL();
     
     /* Update the parent team field */
@@ -292,7 +291,7 @@ gomp_team_end()
     
     pid = get_proc_id();
     the_team = (gomp_team_t *) CURR_TEAM(pid);
-    neg_mask =~ the_team->team[0];
+    neg_mask =~ the_team->team;
     
     neg_mask |= (1 << pid);
     nthreads = the_team->nthreads;

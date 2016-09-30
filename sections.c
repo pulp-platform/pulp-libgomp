@@ -61,13 +61,7 @@ ALWAYS_INLINE void
 gomp_sections_end ()
 {
     gomp_work_share_end_nowait();
-
-    uint32_t pid;
-    gomp_team_t *team;
-
-    pid = get_proc_id();
-    team = gomp_get_curr_team ( pid );
-    gomp_hal_barrier(pid, team->proc_ids[0], team->nthreads, team->proc_ids);
+    gomp_hal_hwBarrier( (gomp_get_curr_team ( get_proc_id( ) ))->barrier_id );
 }
 
 /**************** APIs **************************/
@@ -117,7 +111,7 @@ GOMP_parallel_sections_start (void (*fn) (void *), void *data, unsigned num_thre
     #else
     gomp_sections_init (new_team->work_share, count);
     #endif
-    MSGBarrier_Release( new_team->nthreads, new_team->proc_ids);
+    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
 }
 
 void
@@ -131,7 +125,7 @@ GOMP_parallel_sections (void (*fn) (void *), void *data, unsigned num_threads, u
     #else
     gomp_sections_init (new_team->work_share, count);
     #endif
-    MSGBarrier_Release( new_team->nthreads, new_team->proc_ids);
+    MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
     fn(data);
     GOMP_parallel_end();
 }
