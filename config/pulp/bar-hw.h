@@ -65,7 +65,7 @@ gomp_hal_wait_hwEvent_buff( )
 {
 #if EU_VERSION == 1
     *(volatile int*) (CORE_CLKGATE) =  0x1;
-    // Flush the pipelineY
+    // Flush the pipeline
 #ifdef __riscv__
   asm volatile ("WFI");
 #else
@@ -115,8 +115,8 @@ gomp_hal_hwBarrier( uint32_t barrier_id)
 
 /** First Level Barriers **/
 ALWAYS_INLINE void
-MSGBarrier_Wait_init( uint32_t nthreads,
-                      uint32_t *slave_ids)
+MSGBarrier_Wait( uint32_t nthreads,
+                 uint32_t *slave_ids)
 {     
     uint32_t i;
     for( i = 1; i < nthreads; ++i )

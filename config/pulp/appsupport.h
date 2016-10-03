@@ -12,7 +12,7 @@
 #include <hal/pulp.h>
 
 static inline uint32_t
-get_proc_id()
+get_proc_id( )
 {
 #ifdef NATIVE
   return 0x0U;
@@ -28,7 +28,7 @@ get_proc_id()
 }
 
 static inline uint32_t
-get_cl_id()
+get_cl_id( )
 {
 #ifdef NATIVE
   return 0x0U;
@@ -79,6 +79,6 @@ get_num_clusters()
 #define _printstrt(a) printf("%s - Time %d\n", a, get_time())
 #define _printstrn(a) printf("%s\n", a)
 
-void abort();
+void abort( );
 
 #endif // __APPSUPPORT_H__

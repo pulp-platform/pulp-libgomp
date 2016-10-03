@@ -6,7 +6,7 @@
 
 
 #ifndef __OMP_BAR_H__
-#define __OMP_BAR_H__        i
+#define __OMP_BAR_H__
 
 #include "omp-hal.h"
 
@@ -21,10 +21,10 @@ static inline void
 gomp_hal_hwTrigg_core( uint32_t cmask)
 {
 #if EU_VERSION == 1
-	*(volatile uint32_t*) (TRIGG_BARRIER) = cmask;    
+	*(volatile uint32_t*) (TRIGG_BARRIER) = cmask;
 #else
     eu_evt_trig(eu_evt_trig_addr(0), cmask);
-#endif	
+#endif
 }
 
 

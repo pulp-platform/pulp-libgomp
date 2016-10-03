@@ -53,7 +53,7 @@ perfInitAndStart()
 ALWAYS_INLINE void
 gomp_hal_init()
 {
-    gomp_assert(get_num_procs() <= DEFAULT_MAX_PE);
+    gomp_assert(get_num_procs() <= DEFAULT_MAXPROC);
     gomp_assert(get_num_clusters() <= DEFAULT_MAXCL);
 
     /* Set Event Line to 1 */

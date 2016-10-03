@@ -27,8 +27,8 @@
                 Alessandro Capotondi - alessandro.capotondi@unibo.it
    info         #pragma omp parallel implementation */
 
+#include <pulp.h>
 #include "libgomp.h"
-#include "pulp.h"
 
 void
 GOMP_parallel_start (void *fn, void *data, int num_threads)

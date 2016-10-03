@@ -10,15 +10,15 @@
 
 #include <pulp.h>
 
-#define NUM_HW_BARRIER          0x6U
+#define NUM_HW_BARRIER          ( 0x06U )
 
 //------------------------------------------------------------
 // Builtin command line parameter defaults
 //------------------------------------------------------------
-#define SIZEOF_UNSIGNED         ( 0x4U )
-#define SIZEOF_PTR              ( 0x4U )
-#define SIZEOF_INT              ( 0x4U )
-#define SIZEOF_WORD             ( 0x4U )
+#define SIZEOF_UNSIGNED         ( 0x04U )
+#define SIZEOF_PTR              ( 0x04U )
+#define SIZEOF_INT              ( 0x04U )
+#define SIZEOF_WORD             ( 0x04U )
 #define LIBGOMP_BASE            ( LIBGOMP_BASE_ADDR + 0x8U )
 
 /* Maximum number of clusters supported */
@@ -33,19 +33,8 @@
 
 /* Maximum number of processors supported */
 #ifndef DEFAULT_MAXPROC
-#define DEFAULT_MAXPROC         DEFAULT_MAXCL*DEFAULT_MAX_PE
+#define DEFAULT_MAXPROC         ( DEFAULT_MAXCL * DEFAULT_MAX_PE )
 #endif
-
-
-//------------------------------------------------------------------------------
-// Hardwired Event Unit Offsets 
-//------------------------------------------------------------------------------
-
-#define OFFSET_EV_BUFF_CLEAR   (0x0400U + 0x0004U)
-#define OFFSET_CORE_CLKGATE    (0x0400U + 0x000CU)
-
-#define OFFSET_TRIGG_BARRIER   (0x0800U + 0x035CU)
-#define OFFSET_WAIT_BARRIER    (0x0800U + 0x036CU)
 
 #ifdef __riscv__
 #define PCER_ALL_EVENTS_MASK CSR_PCER_ALL_EVENTS_MASK

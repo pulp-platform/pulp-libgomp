@@ -81,7 +81,7 @@ omp_SPMD_worker()
         gomp_master_region_start( NULL, NULL, 0x0, &root_team );
 
         /* wait all the threads */
-        MSGBarrier_Wait_init(root_team->nthreads, root_team->proc_ids);
+        MSGBarrier_Wait( root_team->nthreads, root_team->proc_ids );
 
         /* Enter to the application Main */
         retval = main(_argc, _argv, _envp);
@@ -111,16 +111,16 @@ omp_SPMD_worker()
                 volatile task_f * omp_task_f;
                 volatile int **omp_args;
 
-#ifdef PROFILE0
+                #ifdef PROFILE0
                 pulp_trace(TRACE_OMP_PARALLEL_ENTER);
-#endif
+                #endif
                 omp_task_f = (void*) (&curr_team->omp_task_f);
                 omp_args = (void*) (&curr_team->omp_args);
                 (**omp_task_f)((int) *omp_args);
 
-#ifdef PROFILE0
+                #ifdef PROFILE0
                 pulp_trace(TRACE_OMP_PARALLEL_EXIT);
-#endif
+                #endif
             }
             MSGBarrier_hwSlaveEnter( curr_team->barrier_id );
         }
