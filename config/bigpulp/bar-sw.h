@@ -101,11 +101,28 @@ MSGBarrier_Wait( uint32_t nthreads,
 }
 
 ALWAYS_INLINE void
+MSGBarrier_swDocking_Wait( uint32_t nteams)
+{
+    for( uint32_t i = 1; i < nteams; ++i )
+    {
+#ifdef OMP_BAR_DEBUG
+        printf("[%d][%d][MSGBarrier_swDocking_Wait] Waiting %d at 0x%x (%x)\n", get_proc_id(), get_cl_id(), i, NFLAGS( i, 0x0U ), *(NFLAGS( i, 0x0U )));
+#endif        
+        while( *(LNFLAGS( i )) != 0x1U )
+            continue;
+
+        /* Reset flag */
+        *(LNFLAGS( i )) = 0x0U;
+
+#ifdef OMP_BAR_DEBUG
+        printf("[%d][%d][MSGBarrier_Wait] Arrived %d\n", get_proc_id(), get_cl_id(), i);
+#endif
+    }
+}
+
+ALWAYS_INLINE void
 MSGBarrier_swDocking ( uint32_t pid )
-{    
-    /* Notify the master I'm on the barrier */
-    *(LNFLAGS(pid)) = 0x1U;
-        
+{        
 #ifdef OMP_BAR_DEBUG
     printf("[%d][%d][MSGBarrier_swDocking] Arrived %d at 0x%x (%x)\n", get_proc_id(), get_cl_id(), pid, LNFLAGS( pid ), *(LNFLAGS( pid )));
 #endif
@@ -113,8 +130,10 @@ MSGBarrier_swDocking ( uint32_t pid )
     volatile MSGBarrier *rflag = LRFLAGS( pid );
     /* Read start value */
     volatile MSGBarrier  old_val = *rflag;
+    
     /*Notify the master I'm on the barrier */
-    *(LNFLAGS( pid )) = 0x1U;
+    *(NFLAGS( 0x0U, get_cl_id() )) = 0x1U;
+
     while(1)
     {
         volatile MSGBarrier *curr_val = LRFLAGS( pid );

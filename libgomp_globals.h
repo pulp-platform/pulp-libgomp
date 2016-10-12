@@ -38,17 +38,16 @@
 #include "libgomp_config.h"
 #include "omp-lock.h"
 
-struct GOMP_parallelData {
-    void (*fn) (void*);
-    void *data;
-    int num_threads;
-    unsigned int flags;
-} league_data;
+typedef struct gomp_target_desc_s
+{
+    void (*fn) (void *);
+    void **hostaddrs;
 
-void (*targetFn) (void *);
-void **targetData;
-unsigned int nteams;
-unsigned int threadLimit;
+    unsigned int nteams;
+    unsigned int threadLimit;
+} gomp_target_desc_t;
+
+gomp_target_desc_t target_desc;
 
 /* task function type */
 typedef void (*task_f)(int);

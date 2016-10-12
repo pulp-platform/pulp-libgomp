@@ -35,13 +35,10 @@ typedef volatile int32_t MSGBarrier;
 
 /* HW Wakeup Cores */
 static inline void
-gomp_hal_hwTrigg_core( uint32_t cmask)
+gomp_hal_hwTrigg_core( uint32_t cmask )
 {
 #if EU_VERSION == 1
-    // *(volatile uint32_t*) ( get_hal_addr( cid, OFFSET_TRIGG_BARRIER )) = cmask;
     *(volatile uint32_t*) ( TRIGG_BARRIER ) = cmask;
-    // *(volatile uint32_t*) ( get_hal_addr( get_cl_id(), OFFSET_EVENT0 )) = cmask;
-
 #ifdef OMP_BAR_DEBUG
         printf("[%d][%d][gomp_hal_hwTrigg_core] Trigger %x at 0x%x\n", get_proc_id(), get_cl_id(), cmask, get_hal_addr( get_cl_id(), OFFSET_EVENT0 ));
 #endif
@@ -56,14 +53,14 @@ gomp_hal_hwTrigg_core( uint32_t cmask)
 
 /* HW Wakeup Cores */
 static inline void
-gomp_hal_hwTrigg_Team( uint32_t cid)
+gomp_hal_hwTrigg_Team( uint32_t cid )
 {
 #if EU_VERSION == 1
 //     *(volatile uint32_t*) ( get_hal_addr( cid, OFFSET_EVENT0 )) = 0x1;
 // #ifdef OMP_BAR_DEBUG
 //         printf("[%d][%d][gomp_hal_hwTrigg_Team] Trigger %x at 0x%x\n", get_proc_id(), get_cl_id(), 0x1, get_hal_addr( cid, OFFSET_EVENT0 ));
 // #endif
-
+	*NFLAGS( cid, 0x0U ) = 0x0U;
 	volatile MSGBarrier *rflag = ((volatile MSGBarrier *) ( RFLAGS_BASE( cid )));
 #ifdef OMP_BAR_DEBUG
 	printf("[%d][%d][gomp_hal_hwTrigg_Team] Trigger %x at 0x%x\n", get_proc_id(), get_cl_id(), 0x1, rflag);
@@ -71,7 +68,6 @@ gomp_hal_hwTrigg_Team( uint32_t cid)
     (*rflag)++;
 #else
 #error BigPulp supports only EU_VERSION==1!
-	 eu_evt_trig(eu_evt_trig_addr(0), cmask);
 #endif
 }
 

@@ -26,51 +26,33 @@
 
 #include "libgomp.h"
 
-// static void
-// gomp_target_fallback (void (*fn) (void *), void **hostaddrs)
-// {
-//   struct gomp_thread old_thr, *thr = gomp_thread ();
-//   old_thr = *thr;
-//   memset (thr, '\0', sizeof (*thr));
-//   if (gomp_places_list)
-//     {
-//       thr->place = old_thr.place;
-//       thr->ts.place_partition_len = gomp_places_list_len;
-//     }
-//   fn (hostaddrs);
-//   gomp_free_thread (thr);
-//   *thr = old_thr;
-// }
-
 void
 GOMP_target (int device, void (*fn) (void *), const void *unused,
        size_t mapnum, void **hostaddrs, size_t *sizes,
        unsigned char *kinds)
 {
-  gomp_team_t *curr_team = CURR_TEAM(get_proc_id());
-  targetFn = fn;
-  targetData = hostaddrs;
-  targetFn(targetData);
-  // fn(hostaddrs);
+  target_desc.fn = fn;
+  target_desc.hostaddrs = hostaddrs;
+  target_desc.nteams = 0x1U;
+  target_desc.threadLimit = DEFAULT_TARGET_THREAD_LIMIT;
+  
+  fn(hostaddrs);
+
+  MSGBarrier_swDocking_Wait(target_desc.nteams);
 }
 
 void
 GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
 {
-  if(get_cl_id() == 0)
+  if(get_cl_id() == MASTER_ID)
   {
-    int i;
-    nteams = num_teams;
-    threadLimit = thread_limit;
+    target_desc.nteams = num_teams > DEFAULT_TARGET_MAX_NTEAMS ? DEFAULT_TARGET_MAX_NTEAMS : num_teams;
+    target_desc.threadLimit = thread_limit > DEFAULT_TARGET_THREAD_LIMIT ? DEFAULT_TARGET_THREAD_LIMIT : thread_limit;
 
-    gomp_team_t *curr_team = CURR_TEAM(get_proc_id());
-
-    for(i = 1; i < omp_get_num_teams(); ++i)
-    {
-      CURR_LEAGUE(i) = curr_team;
-      gomp_hal_hwTrigg_Team(i);
-    } 
+    for(uint32_t i = 1; i < target_desc.nteams; ++i)
+      gomp_hal_hwTrigg_Team( i );
   }
+  gomp_set_thread_pool_idle_cores( target_desc.threadLimit - 1);
 }
 
 int
@@ -82,5 +64,5 @@ omp_get_team_num(void)
 int
 omp_get_num_teams(void)
 {
-  return nteams;
+  return target_desc.nteams;
 }
