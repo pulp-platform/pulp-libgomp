@@ -159,6 +159,7 @@ typedef struct gomp_data_s
     char                  barriers[SWBAR_SIZE];
     global_infos_t        thread_pool_info;
     gomp_team_t *         curr_team[DEFAULT_MAX_PE];
+    gomp_team_t *         lru_team;
     omp_lock_t            team_pool_lock;
     gomp_team_t *         team_pool_list;
     omp_lock_t            ws_pool_lock;
@@ -291,6 +292,18 @@ gomp_set_thread_pool ( uint32_t thread_pool)
     gomp_data.thread_pool_info.thread_pool = thread_pool;
 }
 
+ALWAYS_INLINE void
+gomp_alloc_thread_pool ( uint32_t thread_pool)
+{
+    gomp_data.thread_pool_info.thread_pool |= thread_pool;
+}
+
+ALWAYS_INLINE void
+gomp_dealloc_thread_pool ( uint32_t thread_pool)
+{
+    gomp_data.thread_pool_info.thread_pool &= ~thread_pool;
+}
+
 ALWAYS_INLINE uint32_t
 gomp_get_thread_pool_idle_cores ( )
 {
@@ -342,12 +355,31 @@ gomp_set_curr_team ( uint32_t pid,
                 gomp_team_t * new_team)
 {
     gomp_data.curr_team[pid] = new_team;
+#ifdef OMP_LIBGOMP_GLOBALS_DEBUG
+    printf("[%d][%d][gomp_set_curr_team] 0x%x (@0x%x)\n", get_cl_id(), get_proc_id(), gomp_data.curr_team[pid], &gomp_data.curr_team[pid]);
+#endif    
 }
 
 ALWAYS_INLINE gomp_team_t *
 gomp_get_curr_team ( uint32_t pid )
 {
+#ifdef OMP_LIBGOMP_GLOBALS_DEBUG    
+    printf("[%d][%d][gomp_get_curr_team] 0x%x (@0x%x)\n", get_cl_id(), get_proc_id(), gomp_data.curr_team[pid], &gomp_data.curr_team[pid]);
+#endif    
     return gomp_data.curr_team[pid];
+}
+
+
+ALWAYS_INLINE gomp_team_t *
+gomp_get_lru_team ( )
+{
+    return gomp_data.lru_team;
+}
+
+ALWAYS_INLINE void
+gomp_set_lru_team ( gomp_team_t * team)
+{
+    gomp_data.lru_team = team;
 }
 
 #endif // __LIBGOMP_GLOBALS_H__

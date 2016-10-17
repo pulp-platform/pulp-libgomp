@@ -35,7 +35,7 @@
 #define gomp_assert(x) \
 {\
     if( ! (x)) {\
-        printf("[GOMP] Assert failed at file %s line %d\n",__FILE__, __LINE__); \
+        printf("[%d][%d][GOMP] Assert failed at file %s line %d\n", get_cl_id(), get_proc_id(), __FILE__, __LINE__); \
         abort();\
     }\
 }

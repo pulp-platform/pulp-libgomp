@@ -48,7 +48,7 @@ omp_initenv( )
     gomp_set_thread_pool_idle_cores( nprocs - 1);
     gomp_set_thread_pool( 0x1U );
     gomp_thread_pool_lock_init();
-    
+
     /* Init Curr Team for each threads Thread Pool Information */
     for(i = 0; i < nprocs; ++i)
         gomp_set_curr_team(i, (gomp_team_t *) NULL);
@@ -58,6 +58,9 @@ omp_initenv( )
 
     /* Init WS Descriptor Pre-allocated Pool */
     gomp_ws_pool_init();
+
+    /* Set NULL lru team */
+    gomp_set_lru_team((gomp_team_t *) NULL);
 
     gomp_print_thread_info();
     return;
@@ -74,10 +77,13 @@ omp_SPMD_worker()
     
     if (pid == MASTER_ID)
     {
-        gomp_team_t *root_team;
+        gomp_team_t *root_team, *lru_team;
         
         /* Create "main" team descriptor. This also intializes master core's curr_team descriptor */
         gomp_master_region_start( NULL, NULL, 0x0, &root_team );
+
+        /* Warm LRU team */
+        gomp_init_lru_team();
 
         /* wait all the threads */
         MSGBarrier_Wait( root_team->nthreads, root_team->proc_ids );

@@ -26,6 +26,8 @@
 
 #include "libgomp.h"
 
+// #define OMP_TARGET_DEBUG
+
 void
 GOMP_target (int device, void (*fn) (void *), const void *unused,
        size_t mapnum, void **hostaddrs, size_t *sizes,
@@ -35,9 +37,16 @@ GOMP_target (int device, void (*fn) (void *), const void *unused,
   target_desc.hostaddrs = hostaddrs;
   target_desc.nteams = 0x1U;
   target_desc.threadLimit = DEFAULT_TARGET_THREAD_LIMIT;
-  
+
+#ifdef OMP_TARGET_DEBUG  
+  printf("[%d][%d][GOMP_target] fn 0x%x, nteams %d, threadLimit %d\n", get_cl_id(), get_proc_id(), target_desc.fn, target_desc.nteams, target_desc.threadLimit);
+#endif
+
   fn(hostaddrs);
 
+#ifdef OMP_TARGET_DEBUG  
+  printf("[%d][%d][GOMP_target] calling MSGBarrier_swDocking_Wait....\n", get_cl_id(), get_proc_id());
+#endif
   MSGBarrier_swDocking_Wait(target_desc.nteams);
 }
 
@@ -46,13 +55,17 @@ GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
 {
   if(get_cl_id() == MASTER_ID)
   {
-    target_desc.nteams = num_teams > DEFAULT_TARGET_MAX_NTEAMS ? DEFAULT_TARGET_MAX_NTEAMS : num_teams;
-    target_desc.threadLimit = thread_limit > DEFAULT_TARGET_THREAD_LIMIT ? DEFAULT_TARGET_THREAD_LIMIT : thread_limit;
+    target_desc.nteams = num_teams > DEFAULT_TARGET_MAX_NTEAMS || num_teams == 0 ? DEFAULT_TARGET_MAX_NTEAMS : num_teams;
+    target_desc.threadLimit = thread_limit > DEFAULT_TARGET_THREAD_LIMIT || thread_limit == 0 ? DEFAULT_TARGET_THREAD_LIMIT : thread_limit;
 
     for(uint32_t i = 1; i < target_desc.nteams; ++i)
       gomp_hal_hwTrigg_Team( i );
   }
   gomp_set_thread_pool_idle_cores( target_desc.threadLimit - 1);
+
+  #ifdef OMP_TARGET_DEBUG  
+  printf("[%d][%d][GOMP_teams] fn 0x%x, nteams %d, threadLimit %d\n", get_cl_id(), get_proc_id(), target_desc.fn, target_desc.nteams, target_desc.threadLimit);
+  #endif
 }
 
 int
