@@ -39,7 +39,7 @@ GOMP_target (int device, void (*fn) (void *), const void *unused,
   target_desc.threadLimit = DEFAULT_TARGET_THREAD_LIMIT;
 
 #ifdef OMP_TARGET_DEBUG  
-  printf("[%d][%d][GOMP_target] fn 0x%x, nteams %d, threadLimit %d\n", get_cl_id(), get_proc_id(), target_desc.fn, target_desc.nteams, target_desc.threadLimit);
+  printf("[%d][%d][GOMP_target] fn 0x%x, data 0x%x, nteams %d, threadLimit %d\n", get_cl_id(), get_proc_id(), target_desc.fn, target_desc.hostaddrs, target_desc.nteams, target_desc.threadLimit);
 #endif
 
   fn(hostaddrs);
@@ -64,7 +64,7 @@ GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
   gomp_set_thread_pool_idle_cores( target_desc.threadLimit - 1);
 
   #ifdef OMP_TARGET_DEBUG  
-  printf("[%d][%d][GOMP_teams] fn 0x%x, nteams %d, threadLimit %d\n", get_cl_id(), get_proc_id(), target_desc.fn, target_desc.nteams, target_desc.threadLimit);
+  printf("[%d][%d][GOMP_teams] fn 0x%x, data 0x%x, nteams %d, threadLimit %d\n", get_cl_id(), get_proc_id(), target_desc.fn, target_desc.hostaddrs, target_desc.nteams, target_desc.threadLimit);
   #endif
 }
 

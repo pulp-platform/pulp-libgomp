@@ -102,10 +102,11 @@ omp_SPMD_worker()
             MSGBarrier_swDocking( pid );
             while (1)
             {
-                void (*targetFn) (void *) = target_desc.fn;
+                void (*targetFn) (volatile void *) = (void (*) (volatile void *)) target_desc.fn;
+                volatile void * args = (volatile void *) target_desc.hostaddrs;
 
                 /* Exit runtime loop... */
-                if ( targetFn ==  OMP_SLAVE_EXIT) 
+                if ( (uint32_t) targetFn == (uint32_t) OMP_SLAVE_EXIT) 
                 {
                     // we are done!!
                     break;
@@ -113,7 +114,7 @@ omp_SPMD_worker()
                 /* Have work! */
                 else
                 {
-                    targetFn(target_desc.hostaddrs);
+                    targetFn(args);
                 }
                 MSGBarrier_swDocking( pid );
             }

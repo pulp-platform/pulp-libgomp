@@ -46,6 +46,10 @@ extern int omp_get_max_threads(void);
 extern int omp_get_thread_num(void);
 extern int omp_in_parallel(void);
 
+/* target.c */
+extern int omp_get_num_teams(void);
+extern int omp_get_team_num(void);
+
 extern double omp_get_wtime(void);
 extern int omp_get_wtick(void);
 

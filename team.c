@@ -453,7 +453,7 @@ gomp_team_end()
 ALWAYS_INLINE void
 gomp_init_lru_team( )
 {
-    uint32_t i, nprocs;
+    uint32_t i, nprocs, pid;
     gomp_team_t *new_team;
 
     /* Create the team descriptor for current parreg */
@@ -461,11 +461,20 @@ gomp_init_lru_team( )
     gomp_assert(new_team != (gomp_team_t *) NULL);
 
     nprocs = get_num_procs();
+    pid = get_proc_id();
+
     new_team->nthreads = nprocs;
+    new_team->thread_ids[pid] = 0;
+    new_team->proc_ids[0] = pid;
+    
     new_team->team = __getBitmask(nprocs);
 
     for (i = 1; i < nprocs; ++i)
+    {
         gomp_set_curr_team(i, new_team);
+        new_team->proc_ids[i] = i;
+        new_team->thread_ids[i] = i;
+    }
 
     gomp_set_lru_team(new_team);
     gomp_free_team(new_team);
