@@ -126,6 +126,11 @@ omp_SPMD_worker()
         }
     }
     
+    // Restore barrier 0 as it is used in crt0
+#if EU_VERSION == 1
+    pulp_barrier_setup(0, get_core_num(), (1<<get_core_num()) - 1);
+#endif
+
     return retval;
 }
 
