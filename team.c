@@ -331,6 +331,12 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     
     root_ws->next_ws = NULL;
     root_ws->prev_ws = NULL;
+    
+    #ifdef OMP_NOWAIT_SUPPORT
+    new_team->work_share[pid] = root_ws;
+    #else
+    new_team->work_share = root_ws;
+    #endif
 
     lru_team = gomp_get_lru_team();
     if(new_team->level == 0x1U &&
@@ -345,13 +351,6 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         #ifdef OMP_TEAM_DEBUG  
         printf("[%d][%d][gomp_team_start] HIT: Level: %d, LRU: 0x%x (%d threads), NewTeam: 0x%x (%d threads - bitmask 0x%x)\n", get_cl_id(),
                get_proc_id(), new_team->level, lru_team, lru_team->nthreads, new_team, new_team->nthreads, new_team->team);
-        #endif
-
-        #ifdef OMP_NOWAIT_SUPPORT
-        for( i = 0x0; i < 8; ++i)
-            new_team->work_share[i] = root_ws;
-        #else
-            new_team->work_share = root_ws;
         #endif
     }
     else
@@ -369,12 +368,6 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         new_team->thread_ids[pid] = 0;
         new_team->proc_ids[0] = pid;
 
-        #ifdef OMP_NOWAIT_SUPPORT
-        new_team->work_share[pid] = root_ws;
-        #else
-        new_team->work_share = root_ws;
-        #endif
-
         unsigned int *gtpool = (unsigned int *) (GLOBAL_INFOS_BASE);        
         for( i=1, mask = 2, curr_team_ptr = CURR_TEAM_PTR(1); /* skip p0 (global master) */
              i<nprocs && num_threads;
@@ -385,15 +378,9 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
                 *gtpool |= mask;
                 
                 new_team->team |= mask;
-                
                 new_team->proc_ids[local_id_gen] = i;
-                
                 new_team->thread_ids[i] = local_id_gen++;
                 
-                #ifdef OMP_NOWAIT_SUPPORT
-                new_team->work_share[i] = root_ws;
-                #endif
-
                 /* Update local team structure pointers of all processors of the team */
                 *((gomp_team_t **) curr_team_ptr) = new_team;
 
@@ -478,4 +465,11 @@ gomp_init_lru_team( )
 
     gomp_set_lru_team(new_team);
     gomp_free_team(new_team);
+}
+
+/* End team and destroy team descriptor */
+ALWAYS_INLINE void
+gomp_init_thread(uint32_t pid, gomp_team_t *team)
+{
+    team->work_share[pid] = &(team->root_ws);
 }
