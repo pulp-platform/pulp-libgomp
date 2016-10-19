@@ -29,8 +29,92 @@
 
 #include "libgomp.h"
 
-/*** Team Descriptor Pool APIs ***/
+// #define OMP_TEAM_DEBUG
 
+/* Team-Cache Masks */
+#define BITMASK_1THS   (0x0001U)
+#define BITMASK_2THS   (0x0003U)
+#define BITMASK_3THS   (0x0007U)
+#define BITMASK_4THS   (0x000FU)
+#define BITMASK_5THS   (0x001FU)
+#define BITMASK_6THS   (0x003FU)
+#define BITMASK_7THS   (0x007FU)
+#define BITMASK_8THS   (0x00FFU)
+#define BITMASK_9THS   (0x01FFU)
+#define BITMASK_10THS  (0x03FFU)
+#define BITMASK_11THS  (0x07FFU)
+#define BITMASK_12THS  (0x0FFFU)
+#define BITMASK_13THS  (0x1FFFU)
+#define BITMASK_14THS  (0x3FFFU)
+#define BITMASK_15THS  (0x7FFFU)
+#define BITMASK_16THS  (0xFFFFU)
+
+/* Mask useless bits */
+ALWAYS_INLINE int
+__getBitmask(uint32_t nthreads)
+{
+    uint32_t bitmask;
+    
+    switch(nthreads)
+    {
+        case 1U:
+            bitmask = BITMASK_1THS ;
+            break;
+        case 2U:
+            bitmask = BITMASK_2THS ;
+            break;
+        case 3U:
+            bitmask = BITMASK_3THS ;
+            break;
+        case 4U:
+            bitmask = BITMASK_4THS ;
+            break;
+        case 5U:
+            bitmask = BITMASK_5THS ;
+            break;
+        case 6U:
+            bitmask = BITMASK_6THS ;
+            break;
+        case 7U:
+            bitmask = BITMASK_7THS ;
+            break;
+        case 8U:
+            bitmask = BITMASK_8THS ;
+            break;
+        case 9U:
+            bitmask = BITMASK_9THS ;
+            break;
+        case 10U:
+            bitmask = BITMASK_10THS;
+            break;
+        case 11U:
+            bitmask = BITMASK_11THS;
+            break;
+        case 12U:
+            bitmask = BITMASK_12THS;
+            break;
+        case 13U:
+            bitmask = BITMASK_13THS;
+            break;
+        case 14U:
+            bitmask = BITMASK_14THS;
+            break;
+        case 15U:
+            bitmask = BITMASK_15THS;
+            break;
+        case 16U:
+            bitmask = BITMASK_15THS;
+            break;
+        
+        default:
+            printf("Shit happens! %d\n", nthreads);
+            abort();
+            break;
+    }
+    return bitmask;
+}
+
+/*** Team Descriptor Pool APIs ***/
 ALWAYS_INLINE void
 gomp_team_pool_lock_init ( )
 {
@@ -89,8 +173,17 @@ ALWAYS_INLINE void
 gomp_push_team_pool ( gomp_team_t *team )
 {
     gomp_hal_lock(&gomp_data.team_pool_lock);
+    #ifdef OMP_TEAM_DEBUG  
+    printf("[%d][%d][gomp_push_team_pool] pushing team %x; pool list head 0x%x\n", get_cl_id(), get_proc_id(), team, gomp_data.team_pool_list);
+    #endif        
+
     team->next = gomp_data.team_pool_list;
     gomp_data.team_pool_list = team;
+
+    #ifdef OMP_TEAM_DEBUG  
+    printf("[%d][%d][gomp_push_team_pool] pushed team %x; pool list head 0x%x; pool list head next 0x%x\n", get_cl_id(), get_proc_id(), team, gomp_data.team_pool_list, gomp_data.team_pool_list->next);
+    #endif
+
     gomp_hal_unlock(&gomp_data.team_pool_lock);
 }
 
@@ -105,6 +198,9 @@ gomp_pull_team_pool ( )
         gomp_data.team_pool_list = team->next;
     gomp_hal_unlock(&gomp_data.team_pool_lock);
     
+#ifdef OMP_TEAM_DEBUG  
+    printf("[%d][%d][gomp_pull_team_pool] pulled team %x\n", get_cl_id(), get_proc_id(), team);
+#endif   
     return team;
 }
 
@@ -113,7 +209,7 @@ gomp_pull_team_pool ( )
 ALWAYS_INLINE gomp_team_t *
 gomp_malloc_team()
 {
-    gomp_team_t *new_team;
+    gomp_team_t *new_team
     new_team = (gomp_team_t *) shmalloc( sizeof(gomp_team_t) );
     new_team->next = NULL;
     return new_team;
@@ -177,8 +273,14 @@ gomp_master_region_start ( __attribute__((unused)) void *fn,
         new_team->proc_ids[i] = i;
     
     /* Update Team */
+    new_team->level  = 0x0U;
     new_team->parent = ( gomp_team_t * ) NULL;
     gomp_set_curr_team(0, new_team);
+
+    #ifdef OMP_TEAM_DEBUG
+    printf("[%d][%d][gomp_master_region_start] New Team: 0x%x (%d threads, Level %d), check 0x%x\n", get_cl_id(),
+           get_proc_id(), new_team, nprocs, new_team->level, CURR_TEAM(0));
+    #endif
     *team = new_team;
 }
 
@@ -186,15 +288,11 @@ ALWAYS_INLINE void
 gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team) 
 {
     unsigned int i, nprocs, pid, local_id_gen, num_threads,
-    curr_team_ptr, my_team_ptr;
+    curr_team_ptr;
     unsigned /*long long*/ int mask;
-    gomp_team_t *new_team, *parent_team;
+    gomp_team_t *new_team, *lru_team, *parent_team;
     
-    nprocs = get_num_procs();
     pid = get_proc_id();
-    
-    curr_team_ptr = (unsigned int) CURR_TEAM_PTR(0);
-    my_team_ptr = (unsigned int) CURR_TEAM_PTR(pid);
         
     /* Fetch free processor(s) */
     GLOBAL_INFOS_WAIT();
@@ -205,20 +303,19 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     new_team = gomp_new_team();
     gomp_assert(new_team != (gomp_team_t *) NULL);
 
+    /* Check Level */
+    parent_team      = gomp_get_curr_team(pid);
+    new_team->level  = parent_team->level + 1;
+    new_team->parent = parent_team;
+
     new_team->omp_task_f = (void *)(fn);
-    new_team->omp_args = data;
-    new_team->nthreads = num_threads; // also the master
-    
-    new_team->team = 0x0U;
-    
-    /* Use the global array to fetch idle cores */
-    local_id_gen = 1; // '0' is master
-    
-    num_threads--; // Decrease NUM_THREADS to account for the master
-    new_team->team |= (1 << pid);
-    new_team->thread_ids[pid] = 0;
-    new_team->proc_ids[0] = pid;
-    
+    new_team->omp_args   = data;
+
+    #ifdef OMP_TEAM_DEBUG
+    printf("[%d][%d][gomp_team_start] New Team: 0x%x (%d threads, Level %d), Fn 0x%x, Args 0x%x, parent 0x%x (Level %d)\n", get_cl_id(),
+           get_proc_id(), new_team, num_threads, new_team->level, new_team->omp_task_f, new_team->omp_args, parent_team, parent_team->level);
+    #endif
+
     /*Reset the locks */
     //gomp_hal_unlock(&new_team->critical_lock);
     //gomp_hal_unlock(&new_team->atomic_lock);
@@ -235,50 +332,74 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     root_ws->next_ws = NULL;
     root_ws->prev_ws = NULL;
     
-#ifdef OMP_NOWAIT_SUPPORT
+    #ifdef OMP_NOWAIT_SUPPORT
     new_team->work_share[pid] = root_ws;
-#else
+    #else
     new_team->work_share = root_ws;
-#endif
-    
-    unsigned int *gtpool = (unsigned int *) (GLOBAL_INFOS_BASE);
-    
-    for( i=1, mask = 2, curr_team_ptr += 4; /* skip p0 (global master) */
-         i<nprocs && num_threads;
-         i++, mask <<= 1, curr_team_ptr += 4) 
-    {       
-        if(!( *gtpool & mask))
-        {
-            *gtpool |= mask;
-            
-            new_team->team |= mask;
-            
-            new_team->proc_ids[local_id_gen] = i;
-            
-            new_team->thread_ids[i] = local_id_gen++;
-            
-            /* Update local team structure pointers of all processors of the team */
-            *((gomp_team_t **) curr_team_ptr) = new_team;
+    #endif
 
-#ifdef OMP_NOWAIT_SUPPORT
-            new_team->work_share[i] = root_ws;
-#endif
+    lru_team = gomp_get_lru_team();
+    if(new_team->level == 0x1U &&
+       lru_team == new_team   &&
+       lru_team->nthreads >= num_threads)
+    {
+        //LRU team hit
+        new_team->team = __getBitmask(num_threads);
+        new_team->nthreads = num_threads;
+        gomp_alloc_thread_pool(new_team->team);
 
-            /* How many left? */
-            num_threads--;
-        } // if
-    } // for
-    
+        #ifdef OMP_TEAM_DEBUG  
+        printf("[%d][%d][gomp_team_start] HIT: Level: %d, LRU: 0x%x (%d threads), NewTeam: 0x%x (%d threads - bitmask 0x%x)\n", get_cl_id(),
+               get_proc_id(), new_team->level, lru_team, lru_team->nthreads, new_team, new_team->nthreads, new_team->team);
+        #endif
+    }
+    else
+    {
+        //LRU team miss
+        new_team->team = 0x0U;
+        new_team->nthreads = num_threads;
+        nprocs = get_num_procs();
+
+        /* Use the global array to fetch idle cores */
+        local_id_gen = 1; // '0' is master
+        
+        num_threads--; // Decrease NUM_THREADS to account for the master
+        new_team->team |= (1 << pid);
+        new_team->thread_ids[pid] = 0;
+        new_team->proc_ids[0] = pid;
+
+        unsigned int *gtpool = (unsigned int *) (GLOBAL_INFOS_BASE);        
+        for( i=1, mask = 2, curr_team_ptr = CURR_TEAM_PTR(1); /* skip p0 (global master) */
+             i<nprocs && num_threads;
+             i++, mask <<= 1, curr_team_ptr += 4) 
+        {       
+            if(!( *gtpool & mask))
+            {
+                *gtpool |= mask;
+                
+                new_team->team |= mask;
+                new_team->proc_ids[local_id_gen] = i;
+                new_team->thread_ids[i] = local_id_gen++;
+                
+                /* Update local team structure pointers of all processors of the team */
+                *((gomp_team_t **) curr_team_ptr) = new_team;
+
+                /* How many left? */
+                num_threads--;
+            } // if
+        } // for
+
+        #ifdef OMP_TEAM_DEBUG  
+        printf("[%d][%d][gomp_team_start] MISS: Level: %d, LRU: 0x%x (%d threads), NewTeam: 0x%x (%d threads - bitmask 0x%x)\n", get_cl_id(),
+               get_proc_id(), new_team->level, lru_team, lru_team->nthreads, new_team, new_team->nthreads, new_team->team);
+        #endif
+    }
+
     gomp_hal_set_hwBarrier(new_team->barrier_id, new_team->nthreads, new_team->team);
     GLOBAL_INFOS_SIGNAL();
     
     /* Update the parent team field */
-    parent_team = *(gomp_team_t **) my_team_ptr;
-    
-    new_team->level = parent_team->level + 1;
-    
-    new_team->parent = parent_team;
-    *((gomp_team_t **) my_team_ptr) = new_team;
+    gomp_set_curr_team(pid, new_team);
     *team = new_team;
 }
 
@@ -302,7 +423,7 @@ gomp_team_end()
     GLOBAL_INFOS_SIGNAL();
     
     /* After this, the current parallel thread will be lost. Free...if we had any for MPARM */
-    CURR_TEAM(pid) = the_team->parent;
+    gomp_set_curr_team(pid, the_team->parent);
     
 #ifndef OMP_NOWAIT_SUPPORT      
     gomp_free_work_share(the_team->work_share);
@@ -310,6 +431,45 @@ gomp_team_end()
     gomp_free_work_share(the_team->work_share[pid]);
 #endif
     
+    gomp_set_lru_team(the_team);
     gomp_free_team(the_team);
     
 } // gomp_team_end
+
+/* End team and destroy team descriptor */
+ALWAYS_INLINE void
+gomp_init_lru_team( )
+{
+    uint32_t i, nprocs, pid;
+    gomp_team_t *new_team;
+
+    /* Create the team descriptor for current parreg */
+    new_team = gomp_new_team();
+    gomp_assert(new_team != (gomp_team_t *) NULL);
+
+    nprocs = get_num_procs();
+    pid = get_proc_id();
+
+    new_team->nthreads = nprocs;
+    new_team->thread_ids[pid] = 0;
+    new_team->proc_ids[0] = pid;
+    
+    new_team->team = __getBitmask(nprocs);
+
+    for (i = 1; i < nprocs; ++i)
+    {
+        gomp_set_curr_team(i, new_team);
+        new_team->proc_ids[i] = i;
+        new_team->thread_ids[i] = i;
+    }
+
+    gomp_set_lru_team(new_team);
+    gomp_free_team(new_team);
+}
+
+/* End team and destroy team descriptor */
+ALWAYS_INLINE void
+gomp_init_thread(uint32_t pid, gomp_team_t *team)
+{
+    team->work_share[pid] = &(team->root_ws);
+}

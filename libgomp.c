@@ -42,7 +42,6 @@ ALWAYS_INLINE void
 omp_initenv( )
 {
     uint32_t i, nprocs;
-
     nprocs = get_num_procs();
 
     /* Init Thread Pool Information */
@@ -59,6 +58,9 @@ omp_initenv( )
 
     /* Init WS Descriptor Pre-allocated Pool */
     gomp_ws_pool_init();
+
+    /* Set NULL lru team */
+    gomp_set_lru_team((gomp_team_t *) NULL);
 
     gomp_print_thread_info();
     return;
@@ -80,21 +82,53 @@ omp_SPMD_worker()
         /* Create "main" team descriptor. This also intializes master core's curr_team descriptor */
         gomp_master_region_start( NULL, NULL, 0x0, &root_team );
 
+        /* Warm LRU team */
+        gomp_init_lru_team();
+
         /* wait all the threads */
         MSGBarrier_Wait( root_team->nthreads, root_team->proc_ids );
 
-        /* Enter to the application Main */
-        retval = main(_argc, _argv, _envp);
+        if( get_cl_id() == MASTER_ID )
+        {
+            /* Enter to the application Main */
+            retval = main(_argc, _argv, _envp);
+
+            target_desc.fn = (void (*) (void *)) OMP_SLAVE_EXIT;
+            for( i = 1; i < DEFAULT_TARGET_MAX_NTEAMS; ++i )
+                gomp_hal_hwTrigg_Team( i );
+        }
+        else
+        {
+            MSGBarrier_swDocking( pid );
+            while (1)
+            {
+                void (*targetFn) (volatile void *) = (void (*) (volatile void *)) target_desc.fn;
+                volatile void * args = (volatile void *) target_desc.hostaddrs;
+
+                /* Exit runtime loop... */
+                if ( (uint32_t) targetFn == (uint32_t) OMP_SLAVE_EXIT) 
+                {
+                    // we are done!!
+                    break;
+                }      
+                /* Have work! */
+                else
+                {
+                    targetFn(args);
+                }
+                MSGBarrier_swDocking( pid );
+            }
+        }
 
         /* Release All the Threads to conclude the runtime */
         for( i = 1; i < root_team->nthreads; ++i)
             gomp_set_curr_team(i, OMP_SLAVE_EXIT);
-        MSGBarrier_hwRelease( root_team->team^(0x1<<root_team->proc_ids[0]) );
-
+        
+         MSGBarrier_hwRelease( root_team->team^(0x1<<pid) );
     } // MASTER
     else
     {
-        MSGBarrier_SlaveEnter_init( pid );
+        MSGBarrier_hwDocking( pid );
         while (1)
         {
             volatile gomp_team_t *curr_team = (volatile gomp_team_t *) gomp_get_curr_team( pid );
@@ -114,6 +148,8 @@ omp_SPMD_worker()
                 #ifdef PROFILE0
                 pulp_trace(TRACE_OMP_PARALLEL_ENTER);
                 #endif
+                
+                gomp_init_thread( pid, curr_team);
                 omp_task_f = (void*) (&curr_team->omp_task_f);
                 omp_args = (void*) (&curr_team->omp_args);
                 (**omp_task_f)((int) *omp_args);

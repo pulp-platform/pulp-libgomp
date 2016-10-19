@@ -19,21 +19,23 @@
 #define SIZEOF_PTR              ( 0x04U )
 #define SIZEOF_INT              ( 0x04U )
 #define SIZEOF_WORD             ( 0x04U )
-#define LIBGOMP_BASE            ( LIBGOMP_BASE_ADDR + 0x8U )
+#define LIBGOMP_LBASE           ( LIBGOMP_BASE_ADDR + 0x08U )
+#define LIBGOMP_BASE            ( LIBGOMP_BASE_ADDR + 0x08U )
+#define CLUSTER_OFFSET          ( PULP_CLUSTER_SIZE )
 
 /* Maximum number of clusters supported */
 #ifndef DEFAULT_MAXCL
-#define DEFAULT_MAXCL           ( 0x1U )
+#define DEFAULT_MAXCL           ( 0x01U )
 #endif
 
 /* Maximum number of PEs per-cluster supported */
 #ifndef DEFAULT_MAX_PE
-#define DEFAULT_MAX_PE          ( 0x8U )
+#define DEFAULT_MAX_PE          ( 0x08U )
 #endif
 
 /* Maximum number of processors supported */
 #ifndef DEFAULT_MAXPROC
-#define DEFAULT_MAXPROC         ( DEFAULT_MAXCL * DEFAULT_MAX_PE )
+#define DEFAULT_MAXPROC         ( DEFAULT_MAX_PE )
 #endif
 
 #ifdef __riscv__
@@ -45,5 +47,16 @@
 #define PCMR_ACTIVE SPR_PCMR_ACTIVE
 #define PCMR_SATURATE SPR_PCMR_SATURATE
 #endif
+
+//------------------------------------------------------------------------------
+// Hardwired Event Unit Offsets 
+//------------------------------------------------------------------------------
+
+#define OFFSET_EV_BUFF_CLEAR   ( 0x0400U + 0x0004U )
+#define OFFSET_CORE_CLKGATE    ( 0x0400U + 0x000CU )
+
+#define OFFSET_TRIGG_BARRIER   ( 0x0800U + 0x035CU )
+#define OFFSET_EVENT0          ( 0x0800U + 0X0360U )
+#define OFFSET_WAIT_BARRIER    ( 0x0800U + 0x036CU )
 
 #endif

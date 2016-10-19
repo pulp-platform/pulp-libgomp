@@ -12,6 +12,8 @@
 
 typedef uint32_t omp_lock_t;
 
+// #define OMP_LOCK_DEBUG
+
 #define BUSY_LOCK   0xffffffffU
 #define FREE_LOCK   0x0U
 
@@ -20,9 +22,16 @@ static inline void
 gomp_hal_lock( omp_lock_t *lock )
 {
 	volatile omp_lock_t *lock_ptr = (volatile omp_lock_t *)( (uint32_t) lock + TEST_AND_SET_OFFSET);
-    // printf("[%d-%d][gomp_hal_lock] Locking at 0x%x (0x%x, 0x%x) \n", get_proc_id(), get_cl_id(), lock_ptr, lock, TEST_AND_SET_OFFSET);
+
+#ifdef OMP_LOCK_DEBUG
+    printf("[%d-%d][gomp_hal_lock] Locking at 0x%x (0x%x, 0x%x) \n", get_proc_id(), get_cl_id(), lock_ptr, lock, TEST_AND_SET_OFFSET);
+#endif
+
     while (*lock_ptr == BUSY_LOCK);
-    // printf("[%d-%d][gomp_hal_lock] Locked  at 0x%x\n", get_proc_id(), get_cl_id(), lock_ptr);
+
+#ifdef OMP_LOCK_DEBUG    
+    printf("[%d-%d][gomp_hal_lock] Locked  at 0x%x\n", get_proc_id(), get_cl_id(), lock_ptr);
+#endif
 }
 
 /* gomp_hal_unlock() - release lock "lock" */

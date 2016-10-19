@@ -35,7 +35,7 @@
 #define gomp_assert(x) \
 {\
     if( ! (x)) {\
-        printf("[GOMP] Assert failed at file %s line %d\n",__FILE__, __LINE__); \
+        printf("[%d][%d][GOMP] Assert failed at file %s line %d\n", get_cl_id(), get_proc_id(), __FILE__, __LINE__); \
         abort();\
     }\
 }
@@ -53,12 +53,9 @@ perfInitAndStart()
 ALWAYS_INLINE void
 gomp_hal_init()
 {
-    // In case one cluster above the maximum number supported enters here,just make it sleep forerever
-    if (get_cl_id() >= DEFAULT_MAXCL) {
-        while (1) eu_evt_maskWaitAndClr(0);
-    }
-
-    gomp_assert(get_num_procs() <= DEFAULT_MAX_PE);
+    gomp_assert(get_num_procs() <= DEFAULT_MAXPROC);
+    gomp_assert(get_num_clusters() <= DEFAULT_MAXCL);
+    gomp_assert(EU_VERSION == 1);
 
     /* Set Event Line to 1 */
 #if EU_VERSION == 1

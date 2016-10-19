@@ -71,9 +71,9 @@ NFLAGS_BASE( uint32_t cid )
 #define LNFLAGS( pid )              ((volatile MSGBarrier *) ((uint32_t) SWBAR_LBASE_ADDR + SWBAR_RFLAGS_SIZE + FLAG_OFFSET( pid )))
 
 /* Software Wait Barrier */
-//#define RFLAGS( pid )               ((volatile MSGBarrier *) ( RFLAGS_BASE( pid >> 0x03U ) + FLAG_OFFSET( pid & 0x07U ) ))
+#define RFLAGS( pid )               ((volatile MSGBarrier *) ( RFLAGS_BASE( pid >> 0x03U ) + FLAG_OFFSET( pid & 0x07U ) ))
 /* Software Notification Barrier */
-//#define NFLAGS( mpid, pid )         ((volatile MSGBarrier *) ( NFLAGS_BASE( mpid >> 0x03U ) + FLAG_OFFSET( pid ) ))
+#define NFLAGS( mpid, pid )         ((volatile MSGBarrier *) ( NFLAGS_BASE( mpid >> 0x03U ) + FLAG_OFFSET( pid ) ))
 
 /*** *** Master Slave Barrier APIs *** ***/
 ALWAYS_INLINE void
@@ -168,7 +168,7 @@ MSGBarrier_swDocking ( uint32_t pid )
 //     for( i = 1; i < nthreads; ++i )
 //     {
 //         uint32_t slave_id = slave_ids[i];
-//         volatile MSGBarrier *rflag = LRFLAGS( slave_id );
+//         volatile MSGBarrier *rflag = RFLAGS( slave_id );
 //         (*rflag)++;
 //     }
 // }
@@ -189,4 +189,5 @@ MSGBarrier_swDocking ( uint32_t pid )
 //         MSGBarrier_SlaveEnter( mpid, pid );
 //     }
 // }
+
 #endif /*__BAR_SW_H__*/

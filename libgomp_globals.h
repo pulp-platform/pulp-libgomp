@@ -38,6 +38,17 @@
 #include "libgomp_config.h"
 #include "omp-lock.h"
 
+typedef struct gomp_target_desc_s
+{
+    void (*fn) (void *);
+    void **hostaddrs;
+
+    unsigned int nteams;
+    unsigned int threadLimit;
+} gomp_target_desc_t;
+
+gomp_target_desc_t target_desc;
+
 /* task function type */
 typedef void (*task_f)(int);
 
@@ -128,7 +139,7 @@ typedef struct gomp_team_s
 #else    
     gomp_work_share_t *work_share;
 #endif
-    
+
     /*This field indicates the next team descriptor on the pool of preallocated descriptor, when the current
      is* not used. */
     struct gomp_team_s *next;
@@ -148,6 +159,7 @@ typedef struct gomp_data_s
     char                  barriers[SWBAR_SIZE];
     global_infos_t        thread_pool_info;
     gomp_team_t *         curr_team[DEFAULT_MAX_PE];
+    gomp_team_t *         lru_team;
     omp_lock_t            team_pool_lock;
     gomp_team_t *         team_pool_list;
     omp_lock_t            ws_pool_lock;
@@ -159,9 +171,17 @@ typedef struct gomp_data_s
 
 gomp_data_t gomp_data __attribute__((section(".libgomp")));
 
+#define get_barrier_offset()          ((size_t)&(((gomp_data_t *)0)->barriers))
+#define get_thread_pool_offset()      ((size_t)&(((gomp_data_t *)0)->thread_pool))
+#define get_curr_team_offset()        ((size_t)&(((gomp_data_t *)0)->curr_team))
+#define get_team_pool_lock_offset()   ((size_t)&(((gomp_data_t *)0)->team_pool_lock))
+#define get_team_pool_list_offset()   ((size_t)&(((gomp_data_t *)0)->team_pool_list))
+#define get_ws_pool_lock_offset()     ((size_t)&(((gomp_data_t *)0)->ws_pool_lock))
+#define get_ws_pool_list_offset()     ((size_t)&(((gomp_data_t *)0)->ws_pool_list))
+
 /* Statically allocated global variables
  * (to avoid declaring a "real" global variable */
-#define GLOBAL_INFOS_BASE       ( LIBGOMP_BASE + SWBAR_SIZE )
+#define GLOBAL_INFOS_BASE       ( LIBGOMP_LBASE + SWBAR_SIZE )
 #define GLOBAL_INFOS_SIZE       ( sizeof(global_infos_t) )
 
 #define GLOBAL_THREAD_POOL      ( *((uint32_t*) ( GLOBAL_INFOS_BASE )) )
@@ -177,6 +197,8 @@ gomp_data_t gomp_data __attribute__((section(".libgomp")));
 #define CURR_TEAM_PTR(pid)      ( (gomp_team_t *volatile*) (CURR_TEAM_ADDR + (pid << 2)) )
 #define CURR_TEAM(pid)          ( *CURR_TEAM_PTR(pid) )
 #define CURR_TEAM_SIZE          ( SIZEOF_PTR * DEFAULT_MAX_PE )
+
+#define CURR_LEAGUE(team)       ( * ((gomp_team_t *volatile*)(LIBGOMP_BASE + get_cluster_offset(team) + get_curr_team_offset())))
 
 //Team Descriptor Pre-allocated Pool
 #define TEAMMEM_LOCK_ADDR       ( CURR_TEAM_ADDR + CURR_TEAM_SIZE )
@@ -270,6 +292,18 @@ gomp_set_thread_pool ( uint32_t thread_pool)
     gomp_data.thread_pool_info.thread_pool = thread_pool;
 }
 
+ALWAYS_INLINE void
+gomp_alloc_thread_pool ( uint32_t thread_pool)
+{
+    gomp_data.thread_pool_info.thread_pool |= thread_pool;
+}
+
+ALWAYS_INLINE void
+gomp_dealloc_thread_pool ( uint32_t thread_pool)
+{
+    gomp_data.thread_pool_info.thread_pool &= ~thread_pool;
+}
+
 ALWAYS_INLINE uint32_t
 gomp_get_thread_pool_idle_cores ( )
 {
@@ -321,12 +355,31 @@ gomp_set_curr_team ( uint32_t pid,
                 gomp_team_t * new_team)
 {
     gomp_data.curr_team[pid] = new_team;
+#ifdef OMP_LIBGOMP_GLOBALS_DEBUG
+    printf("[%d][%d][gomp_set_curr_team] 0x%x (@0x%x)\n", get_cl_id(), get_proc_id(), gomp_data.curr_team[pid], &gomp_data.curr_team[pid]);
+#endif    
 }
 
 ALWAYS_INLINE gomp_team_t *
 gomp_get_curr_team ( uint32_t pid )
 {
+#ifdef OMP_LIBGOMP_GLOBALS_DEBUG    
+    printf("[%d][%d][gomp_get_curr_team] 0x%x (@0x%x)\n", get_cl_id(), get_proc_id(), gomp_data.curr_team[pid], &gomp_data.curr_team[pid]);
+#endif    
     return gomp_data.curr_team[pid];
+}
+
+
+ALWAYS_INLINE gomp_team_t *
+gomp_get_lru_team ( )
+{
+    return gomp_data.lru_team;
+}
+
+ALWAYS_INLINE void
+gomp_set_lru_team ( gomp_team_t * team)
+{
+    gomp_data.lru_team = team;
 }
 
 #endif // __LIBGOMP_GLOBALS_H__
