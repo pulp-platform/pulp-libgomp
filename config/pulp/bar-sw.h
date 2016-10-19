@@ -71,9 +71,9 @@ NFLAGS_BASE( uint32_t cid )
 #define LNFLAGS( pid )              ((volatile MSGBarrier *) ((uint32_t) SWBAR_LBASE_ADDR + SWBAR_RFLAGS_SIZE + FLAG_OFFSET( pid )))
 
 /* Software Wait Barrier */
-//#define RFLAGS( pid )               ((volatile MSGBarrier *) ( RFLAGS_BASE( pid >> 0x03U ) + FLAG_OFFSET( pid & 0x07U ) ))
+#define RFLAGS( pid )               ((volatile MSGBarrier *) ( RFLAGS_BASE( pid >> 0x03U ) + FLAG_OFFSET( pid & 0x07U ) ))
 /* Software Notification Barrier */
-//#define NFLAGS( mpid, pid )         ((volatile MSGBarrier *) ( NFLAGS_BASE( mpid >> 0x03U ) + FLAG_OFFSET( pid ) ))
+#define NFLAGS( mpid, pid )         ((volatile MSGBarrier *) ( NFLAGS_BASE( mpid >> 0x03U ) + FLAG_OFFSET( pid ) ))
 
 /*** *** Master Slave Barrier APIs *** ***/
 ALWAYS_INLINE void
