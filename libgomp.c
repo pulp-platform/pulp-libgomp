@@ -149,7 +149,7 @@ omp_SPMD_worker()
                 pulp_trace(TRACE_OMP_PARALLEL_ENTER);
                 #endif
                 
-                gomp_init_thread( pid, curr_team);
+                gomp_init_thread( pid, (gomp_team_t *)curr_team);
                 omp_task_f = (void*) (&curr_team->omp_task_f);
                 omp_args = (void*) (&curr_team->omp_args);
                 (**omp_task_f)((int) *omp_args);

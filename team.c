@@ -107,8 +107,7 @@ __getBitmask(uint32_t nthreads)
             break;
         
         default:
-            printf("Shit happens! %d\n", nthreads);
-            abort();
+            gomp_assert(0);
             break;
     }
     return bitmask;
@@ -287,9 +286,8 @@ gomp_master_region_start ( __attribute__((unused)) void *fn,
 ALWAYS_INLINE void
 gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team) 
 {
-    unsigned int i, nprocs, pid, local_id_gen, num_threads,
-    curr_team_ptr;
-    unsigned /*long long*/ int mask;
+    uint32_t i, nprocs, pid, local_id_gen, num_threads;
+    uint32_t curr_team_ptr, mask;
     gomp_team_t *new_team, *lru_team, *parent_team;
     
     pid = get_proc_id();
@@ -369,7 +367,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         new_team->proc_ids[0] = pid;
 
         unsigned int *gtpool = (unsigned int *) (GLOBAL_INFOS_BASE);        
-        for( i=1, mask = 2, curr_team_ptr = CURR_TEAM_PTR(1); /* skip p0 (global master) */
+        for( i=1, mask = 2, curr_team_ptr = (uint32_t) CURR_TEAM_PTR(1); /* skip p0 (global master) */
              i<nprocs && num_threads;
              i++, mask <<= 1, curr_team_ptr += 4) 
         {       
