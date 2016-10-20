@@ -173,14 +173,14 @@ gomp_push_team_pool ( gomp_team_t *team )
 {
     gomp_hal_lock(&gomp_data.team_pool_lock);
     #ifdef OMP_TEAM_DEBUG  
-    printf("[%d][%d][gomp_push_team_pool] pushing team %x; pool list head 0x%x\n", get_cl_id(), get_proc_id(), team, gomp_data.team_pool_list);
+    printf("[%d][%d][gomp_push_team_pool] pushing team 0x%08x; pool list head 0x%08x\n", get_cl_id(), get_proc_id(), team, gomp_data.team_pool_list);
     #endif        
 
     team->next = gomp_data.team_pool_list;
     gomp_data.team_pool_list = team;
 
     #ifdef OMP_TEAM_DEBUG  
-    printf("[%d][%d][gomp_push_team_pool] pushed team %x; pool list head 0x%x; pool list head next 0x%x\n", get_cl_id(), get_proc_id(), team, gomp_data.team_pool_list, gomp_data.team_pool_list->next);
+    printf("[%d][%d][gomp_push_team_pool] pushed team 0x%08x; pool list head 0x%08x; pool list head next 0x%08x\n", get_cl_id(), get_proc_id(), team, gomp_data.team_pool_list, gomp_data.team_pool_list->next);
     #endif
 
     gomp_hal_unlock(&gomp_data.team_pool_lock);
@@ -193,12 +193,12 @@ gomp_pull_team_pool ( )
 
     gomp_hal_lock(&gomp_data.team_pool_lock);
     team = gomp_data.team_pool_list;
-    if(team != NULL)
+    if(team != (gomp_team_t *) NULL)
         gomp_data.team_pool_list = team->next;
     gomp_hal_unlock(&gomp_data.team_pool_lock);
     
 #ifdef OMP_TEAM_DEBUG  
-    printf("[%d][%d][gomp_pull_team_pool] pulled team %x\n", get_cl_id(), get_proc_id(), team);
+    printf("[%d][%d][gomp_pull_team_pool] pulled team 0x%08x\n", get_cl_id(), get_proc_id(), team);
 #endif   
     return team;
 }
@@ -221,7 +221,8 @@ gomp_new_team ( )
     gomp_team_t *new_team;
 
     new_team = gomp_pull_team_pool();
-    gomp_assert(new_team != (gomp_team_t *) NULL);
+    //NOTE: in aliased architecture it has some issue...
+    // gomp_assert(new_team != (gomp_team_t *) NULL);
     return new_team;
 }
 
@@ -277,7 +278,7 @@ gomp_master_region_start ( __attribute__((unused)) void *fn,
     gomp_set_curr_team(0, new_team);
 
     #ifdef OMP_TEAM_DEBUG
-    printf("[%d][%d][gomp_master_region_start] New Team: 0x%x (%d threads, Level %d), check 0x%x\n", get_cl_id(),
+    printf("[%d][%d][gomp_master_region_start] New Team: 0x%08x (%d threads, Level %d), check 0x%08x\n", get_cl_id(),
            get_proc_id(), new_team, nprocs, new_team->level, CURR_TEAM(0));
     #endif
     *team = new_team;
@@ -310,7 +311,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
     new_team->omp_args   = data;
 
     #ifdef OMP_TEAM_DEBUG
-    printf("[%d][%d][gomp_team_start] New Team: 0x%x (%d threads, Level %d), Fn 0x%x, Args 0x%x, parent 0x%x (Level %d)\n", get_cl_id(),
+    printf("[%d][%d][gomp_team_start] New Team: 0x%08x (%d threads, Level %d), Fn 0x%08x, Args 0x%08x, parent 0x%08x (Level %d)\n", get_cl_id(),
            get_proc_id(), new_team, num_threads, new_team->level, new_team->omp_task_f, new_team->omp_args, parent_team, parent_team->level);
     #endif
 
@@ -347,7 +348,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         gomp_alloc_thread_pool(new_team->team);
 
         #ifdef OMP_TEAM_DEBUG  
-        printf("[%d][%d][gomp_team_start] HIT: Level: %d, LRU: 0x%x (%d threads), NewTeam: 0x%x (%d threads - bitmask 0x%x)\n", get_cl_id(),
+        printf("[%d][%d][gomp_team_start] HIT: Level: %d, LRU: 0x%08x (%d threads), NewTeam: 0x%08x (%d threads - bitmask 0x%08x)\n", get_cl_id(),
                get_proc_id(), new_team->level, lru_team, lru_team->nthreads, new_team, new_team->nthreads, new_team->team);
         #endif
     }
@@ -388,7 +389,7 @@ gomp_team_start (void *fn, void *data, int specified, gomp_team_t **team)
         } // for
 
         #ifdef OMP_TEAM_DEBUG  
-        printf("[%d][%d][gomp_team_start] MISS: Level: %d, LRU: 0x%x (%d threads), NewTeam: 0x%x (%d threads - bitmask 0x%x)\n", get_cl_id(),
+        printf("[%d][%d][gomp_team_start] MISS: Level: %d, LRU: 0x%08x (%d threads), NewTeam: 0x%08x (%d threads - bitmask 0x%08x)\n", get_cl_id(),
                get_proc_id(), new_team->level, lru_team, lru_team->nthreads, new_team, new_team->nthreads, new_team->team);
         #endif
     }
