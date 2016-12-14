@@ -33,7 +33,7 @@
 void
 GOMP_barrier()
 {
-#ifdef PROFILE0
+#if defined(PROFILE0) && defined(TRACE_BASE_ADDR)
     pulp_trace(TRACE_OMP_BARRIER_ENTER);
 #endif
 
@@ -41,7 +41,7 @@ GOMP_barrier()
     // gomp_hal_hwBarrier( (gomp_get_curr_team ( get_proc_id( ) ))->barrier_id );
     gomp_hal_hwBarrier( (CURR_TEAM ( get_proc_id( ) ))->barrier_id );
 
-#ifdef PROFILE0
+#if defined(PROFILE0) && defined(TRACE_BASE_ADDR)
     pulp_trace(TRACE_OMP_BARRIER_EXIT);
 #endif
  

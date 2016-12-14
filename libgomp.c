@@ -145,7 +145,7 @@ omp_SPMD_worker()
                 volatile task_f * omp_task_f;
                 volatile int **omp_args;
 
-                #ifdef PROFILE0
+                #if defined(PROFILE0) && defined(TRACE_BASE_ADDR)
                 pulp_trace(TRACE_OMP_PARALLEL_ENTER);
                 #endif
                 
@@ -154,7 +154,7 @@ omp_SPMD_worker()
                 omp_args = (void*) (&curr_team->omp_args);
                 (**omp_task_f)((int) *omp_args);
 
-                #ifdef PROFILE0
+                #if defined(PROFILE0) && defined(TRACE_BASE_ADDR)
                 pulp_trace(TRACE_OMP_PARALLEL_EXIT);
                 #endif
             }

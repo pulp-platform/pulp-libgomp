@@ -46,7 +46,7 @@ GOMP_atomic_end (void)
 void
 GOMP_critical_start (void)
 {
-#ifdef PROFILE0
+#if defined(PROFILE0) && defined(TRACE_BASE_ADDR)
     pulp_trace(TRACE_OMP_CRITICAL_ENTER);
 #endif
     uint32_t pid = get_proc_id();
@@ -57,7 +57,7 @@ void
 GOMP_critical_end (void)
 {
     uint32_t pid = get_proc_id();
-#ifdef PROFILE0
+#if defined(PROFILE0) && defined(TRACE_BASE_ADDR)
     pulp_trace(TRACE_OMP_CRITICAL_EXIT);
 #endif
     gomp_hal_unlock(&(CURR_TEAM(pid)->critical_lock));

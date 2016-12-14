@@ -51,7 +51,7 @@ GOMP_parallel_end (void)
 void
 GOMP_parallel (void (*fn) (void*), void *data, int num_threads, unsigned int flags)
 {
-#ifdef PROFILE0
+#if defined(PROFILE0) && defined(TRACE_BASE_ADDR)
 #ifdef PROFILE1
     pulp_trace_perf(TRACE_OMP_PARALLEL_ENTER);
 #else
@@ -66,7 +66,7 @@ GOMP_parallel (void (*fn) (void*), void *data, int num_threads, unsigned int fla
     MSGBarrier_hwRelease( new_team->team^(0x1<<new_team->proc_ids[0]) );
     fn(data);
     
-#ifdef PROFILE0
+#if defined(PROFILE0) && defined(TRACE_BASE_ADDR)
 #ifdef PROFILE1
     pulp_trace_perf(TRACE_OMP_PARALLEL_EXIT);
 #else
