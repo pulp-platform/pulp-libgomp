@@ -6,7 +6,7 @@
 #define __MEMUTILS_H__
 
 extern void shmalloc_init();
-extern inline void *shmalloc(unsigned int);
-extern inline void shfree(void *);
+extern void *shmalloc(unsigned int);
+extern void shfree(void *);
 
 #endif
