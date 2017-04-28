@@ -90,9 +90,13 @@ omp_SPMD_worker()
 
         if( get_cl_id() == MASTER_ID )
         {
+
+#ifdef GCC_OFFLOAD_SUPPORT
+            retval = gomp_offload_manager();
+#else
             /* Enter to the application Main */
             retval = main(_argc, _argv, _envp);
-
+#endif
             target_desc.fn = (void (*) (void *)) OMP_SLAVE_EXIT;
             for( i = 1; i < DEFAULT_TARGET_MAX_NTEAMS; ++i )
                 gomp_hal_hwTrigg_Team( i );
