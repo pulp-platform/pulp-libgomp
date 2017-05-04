@@ -79,3 +79,201 @@ omp_get_num_teams(void)
 {
   return target_desc.nteams;
 }
+
+#ifndef TRYX_LEGACY
+/*******************************************************************************/
+
+void GOMP_pulp_RAB_tryx_slowpath()
+{
+  int coreid = get_core_id();
+  unsigned int mask = read_evnt_mask_low(coreid);
+
+  // only listen to wake-up event
+  set_evnt_mask_low(coreid, EVTMASK_RAB_WAKEUP);
+
+  // go to sleep
+  wait_event();
+
+  // clear RAB miss event buffer
+  clear_evnt_buff_low(EVTMASK_RAB_WAKEUP);
+
+  // restore the event mask
+  set_evnt_mask_low(coreid, mask);
+
+  return;
+}
+
+int GOMP_pulp_RAB_tryread(unsigned int * addr)
+{
+  volatile unsigned int *tryx_ctrl = (unsigned int *)TRYX_CTRL_BASE_ADDR;
+  unsigned int ret;
+   
+#if PROFILE_TRYX == 1
+  int coreid = get_core_id();
+  n_tryx[coreid]++;
+#endif
+ 
+#if DEBUG_TRYX == 1
+#pragma omp critical
+  printf("tryread to address 0x%X\n",(unsigned)addr);
+#endif
+   
+  // actual tryread
+  ret = *(volatile unsigned int*)addr;
+ 
+  // check for a RAB miss
+  if (*tryx_ctrl & 0x1) {
+  
+#if DEBUG_TRYX == 1
+    printf("miss on address 0x%X\n",(unsigned)addr);
+#endif
+
+#if PROFILE_TRYX  == 1  
+    start_core_timer(coreid);
+    n_misses[coreid]++;
+#endif
+         
+    // go to sleep
+    GOMP_pulp_RAB_tryx_slowpath();
+ 
+    // repeat tryread
+    ret = *(volatile unsigned int*)addr;
+ 
+#if PROFILE_TRYX == 1
+    stop_core_timer(coreid); 
+#endif 
+  }
+  
+  return ret;
+}
+
+void GOMP_pulp_RAB_trywrite(unsigned int * addr, unsigned int value)
+{
+  volatile unsigned int *tryx_ctrl = (unsigned int *)TRYX_CTRL_BASE_ADDR;
+ 
+#if PROFILE_TRYX == 1
+  int coreid = get_core_id();
+  n_tryx[coreid]++;
+#endif
+
+#if DEBUG_TRYX == 1
+#pragma omp critical
+  printf("trywrite to address 0x%X\n",(unsigned)addr);
+#endif
+ 
+  // actual trywrite
+  *(volatile unsigned int*)addr = value;
+
+  // check for a RAB miss
+  if (*tryx_ctrl & 0x1) {
+
+#if PROFILE_TRYX == 1  
+    start_core_timer(coreid);
+    n_misses[coreid]++;
+#endif
+    
+    // go to sleep
+    GOMP_pulp_RAB_tryx_slowpath();
+
+    // repeat trywrite
+    *(volatile unsigned int*)addr = value;
+
+#if PROFILE_TRYX == 1  
+    stop_core_timer(coreid);
+#endif
+  }
+
+  return;
+}
+
+void GOMP_pulp_RAB_tryread_prefetch(unsigned int * addr)
+{
+  volatile unsigned int *tryx_ctrl = (unsigned int *)TRYX_CTRL_BASE_ADDR;
+   
+#if PROFILE_TRYX == 1
+  int coreid = get_core_id();
+  n_tryx[coreid]++;
+#endif
+ 
+#if DEBUG_TRYX == 1
+#pragma omp critical
+  printf("tryread to address 0x%X\n",(unsigned)addr);
+#endif
+  
+  // trigger prefetch
+  *tryx_ctrl = 0xFFFFFFFF; 
+
+  // actual tryread
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+  const volatile unsigned int ret = *(volatile unsigned int*)addr;
+#pragma GCC diagnostic pop
+ 
+  return;
+}
+
+/*******************************************************************************/
+#else // TRYX_LEGACY
+void GOMP_pulp_rab_tryread_slowpath()
+{
+  int coreid = get_core_id();
+
+  // clear RAB miss event buffer 
+  clear_evnt_buff_low(EVTMASK_AXI_RESP);
+
+  // only listen to wake-up event
+  set_evnt_mask_low(coreid, EVTMASK_RAB_WAKEUP_LEGACY);
+
+  // go to sleep
+  wait_event();
+
+  // clear RAB miss event buffer
+  clear_evnt_buff_low(EVTMASK_RAB_WAKEUP_LEGACY);
+
+  return;
+}
+
+int GOMP_pulp_rab_tryread(unsigned int * addr)
+{
+ 
+  int coreid = get_core_id();
+  volatile unsigned int ret;
+
+#if PROFILE_TRYX == 1
+  n_tryx[coreid]++;
+#endif
+
+#if DEBUG_TRYX == 1
+  if ( !((unsigned)addr & 0xFFFFF000) ) {
+#pragma omp critical
+    printf("tryread to address 0x%X\n",(unsigned)addr);
+  }
+#endif
+
+  // only listen to axi_resp_event
+  set_evnt_mask_low(coreid, EVTMASK_AXI_RESP);
+
+  // actual try read
+  ret = *addr;
+
+  // check for a RAB miss event
+  if (read_evnt_buff_low(coreid) & EVTMASK_AXI_RESP) {
+
+#if PROFILE_TRYX == 1
+    n_misses[coreid]++;
+    start_core_timer(coreid);
+#endif
+
+    GOMP_pulp_rab_tryread_slowpath();
+
+#if PROFILE_TRYX == 1
+    stop_core_timer(coreid);
+#endif
+  }
+
+  // re-enable barrier
+  set_evnt_mask_low(coreid, EVTMASK_BARRIER);
+
+  return ret;
+}
+#endif

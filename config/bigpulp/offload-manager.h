@@ -19,6 +19,11 @@ gomp_init_offload_manager ( )
 {
     uint32_t i;
 
+    offload_func_table = ((void **) __OFFLOAD_TARGET_TABLE__)[0];
+    nb_offload_funcs = ((uint32_t)((void **) __OFFLOAD_TARGET_TABLE__)[1] - (uint32_t) ((void **) __OFFLOAD_TARGET_TABLE__)[0]) / 0x4U;
+    offload_var_table  = ((void **) __OFFLOAD_TARGET_TABLE__)[2];
+    nb_offload_vars  = ((uint32_t)((void **) __OFFLOAD_TARGET_TABLE__)[3] - (uint32_t) ((void **) __OFFLOAD_TARGET_TABLE__)[2]) / 0x4U;
+
     mailbox_write(TO_RUNTIME | 2);
     mailbox_write(nb_offload_funcs);
     mailbox_write(nb_offload_vars);
@@ -26,13 +31,13 @@ gomp_init_offload_manager ( )
     if(nb_offload_funcs) {
         mailbox_write(TO_RUNTIME | nb_offload_funcs);
 #ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("(func_table = %x {", func_table);
+        printf("(offload_func_table = %x {", offload_func_table);
 #endif
         for(i = 0; i < nb_offload_funcs; i++){
 #ifdef OFFLOAD_MANAGER_VERBOSE          
-            printf ("func%d: %x, ", i, func_table[i]);
+            printf ("func%d: %x, ", i, offload_func_table[i]);
 #endif
-            mailbox_write(func_table[i]);
+            mailbox_write((uint32_t) offload_func_table[i]);
         }
 #ifdef OFFLOAD_MANAGER_VERBOSE
         printf ("\n");
@@ -43,15 +48,15 @@ gomp_init_offload_manager ( )
     {
         mailbox_write(TO_RUNTIME | 2*nb_offload_vars);
 #ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("(var_table = %x {", var_table);
+        printf("(offload_var_table = %x {", offload_var_table);
 #endif    
         for(i = 0; i < nb_offload_vars; i++)
         {
 #ifdef OFFLOAD_MANAGER_VERBOSE
-            printf ("var%d: %x size %x,", i, var_table[2*i], var_table[2*i+1]);
+            printf ("var%d: %x size %x,", i, offload_var_table[2*i], offload_var_table[2*i+1]);
 #endif
-            mailbox_write(offload_var_table[2*i]);
-            mailbox_write(offload_var_table[2*i+1]);
+            mailbox_write((uint32_t) offload_var_table[2*i]);
+            mailbox_write((uint32_t) offload_var_table[2*i+1]);
         }
 #ifdef OFFLOAD_MANAGER_VERBOSE
         printf ("\n");
@@ -61,5 +66,5 @@ gomp_init_offload_manager ( )
     return;
 }
 
-void gomp_offload_manager ( void );
+int gomp_offload_manager ( void );
 #endif

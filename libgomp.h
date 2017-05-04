@@ -171,4 +171,18 @@ extern int GOMP_single_start(void);
 extern void *GOMP_single_copy_start(void);
 extern void GOMP_single_copy_end(void *);
 
+/* target.c */
+extern void GOMP_target (int, void (*) (void *), const void *, size_t, void **, size_t *, unsigned char *);
+extern void GOMP_teams (unsigned int, unsigned int);
+
+#ifndef TRYX_LEGACY
+extern void GOMP_pulp_RAB_tryx_slowpath() __attribute__((noinline));
+extern int  GOMP_pulp_RAB_tryread (unsigned int *);
+extern void GOMP_pulp_RAB_trywrite(unsigned int *, unsigned int);
+extern void GOMP_pulp_RAB_tryread_prefetch(unsigned int *);
+#else
+extern void GOMP_pulp_rab_tryread_slowpath();
+extern int  GOMP_pulp_rab_tryread(unsigned int *);
+#endif
+
 #endif  /* __LIBGOMP_H__ */

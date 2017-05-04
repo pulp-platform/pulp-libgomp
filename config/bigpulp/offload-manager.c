@@ -4,10 +4,10 @@
 #include "offload-manager.h"
 
 //FIXME consider to move these variables to L1 (vars it is ususally Empty when OpenMP4 Offload is used)
-void** offload_func_table = ((void **) __OFFLOAD_TARGET_TABLE__)[0];
-uint32_t nb_offload_funcs = ((uint32_t)((void **) __OFFLOAD_TARGET_TABLE__)[1] - (uint32_t) ((void **) __OFFLOAD_TARGET_TABLE__)[0]) / 0x4U;
-void** offload_var_table  = ((void **) __OFFLOAD_TARGET_TABLE__)[2];
-uint32_t nb_offload_vars  = ((uint32_t)((void **) __OFFLOAD_TARGET_TABLE__)[3] - (uint32_t) ((void **) __OFFLOAD_TARGET_TABLE__)[2]) / 0x4U;
+void** offload_func_table;
+uint32_t nb_offload_funcs;
+void** offload_var_table;
+uint32_t nb_offload_vars;
 
 int
 gomp_offload_manager ( )
@@ -21,11 +21,11 @@ gomp_offload_manager ( )
     //FIXME Note that the offload at the moment use several time the mailbox.
     // We should compact the offload descriptor and just sent a pointer to
     // that descriptor.
-    uint32_t cmd;
+    uint32_t cmd = NULL;
 
     // Offloaded function pointer and arguments
-    void (*offloadFn)(void **);
-    void **offloadArgs;
+    void (*offloadFn)(void **) = NULL;
+    void **offloadArgs = NULL;
     
     //FIXME this function desnt return yet
     while(1)
@@ -43,18 +43,18 @@ gomp_offload_manager ( )
         // (2) The host send throught the mailbox
         // the pointer to the function that should
         // be executed on the accelerator
-        mailbox_read(&offloadFn);
+        mailbox_read((uint32_t *) &offloadFn);
 
         // (3) The host send throught the mailbox
         // the pointer to the arguments that should
         // be used
-        mailbox_read(&offloadArgs);
+        mailbox_read((uint32_t *) &offloadArgs);
 
         reset_timer();
         start_timer();
         
         // (4) Execute the Offloaded Function!!!
-        offloadFn(args);
+        offloadFn(offloadArgs);
         
         // EOC signal NOTIFY used to notify
         // offload execution termination to the host
