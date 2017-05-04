@@ -25,7 +25,11 @@
 
 /* Maximum number of clusters supported */
 #ifndef DEFAULT_MAXCL
+#if PULP_CHIP == CHIP_BIGPULP
 #define DEFAULT_MAXCL           ( 0x04U )
+#else
+#define DEFAULT_MAXCL           ( 0x01U )
+#endif
 #endif
 
 /* Maximum number of PEs per-cluster supported */
