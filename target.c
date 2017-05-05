@@ -80,6 +80,7 @@ omp_get_num_teams(void)
   return target_desc.nteams;
 }
 
+#if PULP_CHIP == CHIP_BIGPULP_Z_7045_O
 #ifndef TRYX_LEGACY
 /*******************************************************************************/
 
@@ -276,4 +277,5 @@ int GOMP_pulp_rab_tryread(unsigned int * addr)
 
   return ret;
 }
+#endif
 #endif

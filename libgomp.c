@@ -91,7 +91,7 @@ omp_SPMD_worker()
         if( get_cl_id() == MASTER_ID )
         {
 
-#ifdef GCC_OFFLOAD_SUPPORT
+#if PULP_CHIP == CHIP_BIGPULP_Z_7045_O
             retval = gomp_offload_manager();
 #else
             /* Enter to the application Main */

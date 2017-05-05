@@ -1,8 +1,7 @@
-OMP_CONFIG           = -DOMP_NOWAIT_SUPPORT -DGCC_OFFLOAD_SUPPORT
+OMP_CONFIG           = -DOMP_NOWAIT_SUPPORT
 PULP_LIBS            = gomp
 PULP_LIB_SRCS_gomp   += root.c
 PULP_LIB_CFLAGS_gomp = -Wall -O2 -g3 ${OMP_CONFIG}
-
 
 -include $(PULP_SDK_HOME)/install/rules/pulp.mk
 

@@ -10,7 +10,7 @@
 #include "config/bigpulp/appsupport.c"
 #include "config/bigpulp/lock.c"
 #include "config/bigpulp/memutils.c"
-#ifdef GCC_OFFLOAD_SUPPORT
+#if PULP_CHIP == CHIP_BIGPULP_Z_7045_O
 #include "config/bigpulp/offload-manager.c"
 #endif
 #else
