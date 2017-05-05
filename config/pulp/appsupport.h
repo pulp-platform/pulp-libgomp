@@ -81,4 +81,12 @@ get_num_clusters()
 
 void abort( );
 
+int  pulp_mchan_transfer(unsigned int len, char type, char incr, char twd, unsigned int ext_addr, unsigned int tcdm_addr, unsigned short int count, unsigned short int stride);
+void pulp_mchan_barrier(int id);
+
+void *pulp_l1malloc(int);
+void *pulp_l2malloc(int);
+void pulp_l1free(void *);
+void pulp_l2free(void *);
+
 #endif // __APPSUPPORT_H__

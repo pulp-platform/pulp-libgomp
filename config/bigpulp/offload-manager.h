@@ -14,6 +14,7 @@ extern void *__OFFLOAD_TARGET_TABLE__[];
 
 // #define OFFLOAD_MANAGER_VERBOSE
 
+
 static inline void
 gomp_init_offload_manager ( )
 {
@@ -67,4 +68,5 @@ gomp_init_offload_manager ( )
 }
 
 int gomp_offload_manager ( void );
+void target_register_lib (const void *);
 #endif

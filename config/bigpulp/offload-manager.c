@@ -9,6 +9,12 @@ uint32_t nb_offload_funcs;
 void** offload_var_table;
 uint32_t nb_offload_vars;
 
+void
+target_register_lib (const void *target_table)
+{
+    return;
+}
+
 int
 gomp_offload_manager ( )
 {
