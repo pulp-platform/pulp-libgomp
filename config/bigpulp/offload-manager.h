@@ -7,13 +7,7 @@ extern void** offload_var_table;
 extern uint32_t nb_offload_vars;
 extern void *__OFFLOAD_TARGET_TABLE__[];
 
-// void target_register_lib (const void *target_table)
-// {
-//     return;
-// }
-
 // #define OFFLOAD_MANAGER_VERBOSE
-
 
 static inline void
 gomp_init_offload_manager ( )
