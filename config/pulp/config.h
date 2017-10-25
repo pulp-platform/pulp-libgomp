@@ -10,7 +10,7 @@
 
 #include <pulp.h>
 
-#define NUM_HW_BARRIER          ( 0x06U )
+#define NUM_HW_BARRIER          ( 0x04U )
 
 //------------------------------------------------------------
 // Builtin command line parameter defaults
