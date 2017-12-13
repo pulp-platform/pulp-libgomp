@@ -32,6 +32,8 @@
 
 #include "appsupport.h"
 
+//#define OMP_LIBGOMP_GLOBALS_DEBUG 1
+
 #define GOMP_WARN_NOT_SUPPORTED(what) printf("[libGOMP] " what " is not supported yet.");
 
 /* Platform Information */

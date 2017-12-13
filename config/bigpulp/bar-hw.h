@@ -8,7 +8,7 @@
 #ifndef __BAR_HW_H__
 #define __BAR_HW_H__           
 
-#include "bar.h"
+//#include "bar.h"
 #if EU_VERSION == 1
 #include "events.h"
 #include "timer.h"

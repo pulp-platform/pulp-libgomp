@@ -6,10 +6,3 @@
 
 #include <pulp.h>
 #include <appsupport.h>
-
-void abort()
-{
-  printf("ERROR: aborting...\n");
-  exit(1);
-  eoc(1);
-}

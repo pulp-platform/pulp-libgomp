@@ -5,11 +5,3 @@
    info         Appsupport for PULP */
 
 #include <pulp.h>
-
-void abort()
-{
-  printf("ERROR: aborting...\n");
-  exit(1);
-  eoc(1);
-}
-

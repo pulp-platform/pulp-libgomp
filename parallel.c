@@ -58,6 +58,9 @@ GOMP_parallel (void (*fn) (void*), void *data, int num_threads, unsigned int fla
     pulp_trace(TRACE_OMP_PARALLEL_ENTER);
 #endif
 #endif
+
+
+    
     
     /* The thread descriptor for slaves of the newly-created team */
     gomp_team_t *new_team;

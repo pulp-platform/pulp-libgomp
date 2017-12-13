@@ -185,5 +185,18 @@ omp_init ()
     if (get_proc_id() == MASTER_ID)
         omp_initenv();
     
-    return omp_SPMD_worker();
+    int err = omp_SPMD_worker();
+
+    if (get_proc_id() == MASTER_ID) exit(err);
+}
+
+
+static void omp_entry()
+{
+    rt_team_fork(rt_nb_pe(), omp_init, NULL);
+}
+    
+__attribute__((constructor))  void omp_constructor()
+{
+  __rt_cluster_entry =  omp_entry;
 }

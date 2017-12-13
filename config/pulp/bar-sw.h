@@ -8,7 +8,7 @@
 #ifndef __BAR_SW_H__
 #define __BAR_SW_H__           
 
-#include "bar.h"
+//#include "bar.h"
 
 /* Global RFLAGS base address */
 ALWAYS_INLINE uint32_t

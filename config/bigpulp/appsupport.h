@@ -18,7 +18,7 @@ get_proc_id( )
   return 0x0U;
 #else
 #if PULP_CHIP_FAMILY != CHIP_FULMINE
-  return plp_coreId();
+  return rt_core_id();
 #else
   unsigned int value;
   __asm__ ("l.mfspr\t\t%0,r0,%1" : "=r" (value) : "I" (SPR_CORE_ID));
@@ -34,7 +34,7 @@ get_cl_id( )
   return 0x0U;
 #else
 #if PULP_CHIP_FAMILY != CHIP_FULMINE
-  return plp_clusterId();
+  return rt_cluster_id();
 #else    
   unsigned int value;
   __asm__ ("l.mfspr\t\t%0,r0,%1" : "=r" (value) : "I" (SPR_CLUSTER_ID));
@@ -47,7 +47,7 @@ static inline uint32_t
 get_num_procs()
 {
 #if PULP_CHIP_FAMILY != CHIP_FULMINE
-  return plp_nbCores();
+  return rt_nb_pe();
 #else  
   return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x12);
 #endif
@@ -57,7 +57,7 @@ static inline uint32_t
 get_num_clusters()
 {
 #if PULP_CHIP_FAMILY != CHIP_FULMINE
-  return plp_nbClusters();
+  return rt_nb_cluster();
 #else  
   return *(volatile unsigned short*)(APB_SOC_CTRL_ADDR + 0x10);
 #endif

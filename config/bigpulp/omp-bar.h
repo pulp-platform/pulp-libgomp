@@ -43,7 +43,6 @@ gomp_hal_hwTrigg_core( uint32_t cmask )
         printf("[%d][%d][gomp_hal_hwTrigg_core] Trigger %x at 0x%x\n", get_proc_id(), get_cl_id(), cmask, get_hal_addr( get_cl_id(), OFFSET_EVENT0 ));
 #endif
 #else
-#error BigPulp supports only EU_VERSION==1!
 	 eu_evt_trig(eu_evt_trig_addr(0), cmask);
 #endif
 }
@@ -67,7 +66,6 @@ gomp_hal_hwTrigg_Team( uint32_t cid )
 #endif	
     (*rflag)++;
 #else
-#error BigPulp supports only EU_VERSION==1!
 #endif
 }
 
