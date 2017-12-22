@@ -196,7 +196,8 @@ static void omp_entry()
     rt_team_fork(rt_nb_pe(), omp_init, NULL);
 }
     
-__attribute__((constructor))  void omp_constructor()
+RT_BOOT_CODE __attribute__((constructor))  void omp_constructor()
 {
+    printf("####Hello!!!!!\n");
   __rt_cluster_entry =  omp_entry;
 }
