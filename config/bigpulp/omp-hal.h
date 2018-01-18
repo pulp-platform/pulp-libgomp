@@ -55,7 +55,7 @@ gomp_hal_init()
 {
     gomp_assert(get_num_procs() <= DEFAULT_MAXPROC);
     gomp_assert(get_num_clusters() <= DEFAULT_MAXCL);
-    gomp_assert(EU_VERSION == 1);
+    //gomp_assert(EU_VERSION == 1);
 
     /* Set Event Line to 1 */
 #if EU_VERSION == 1

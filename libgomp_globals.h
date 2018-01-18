@@ -203,7 +203,7 @@ gomp_data_t gomp_data __attribute__((section(".libgomp")));
 #define CURR_LEAGUE(team)       ( * ((gomp_team_t *volatile*)(LIBGOMP_BASE + get_cluster_offset(team) + get_curr_team_offset())))
 
 //Team Descriptor Pre-allocated Pool
-#define TEAMMEM_LOCK_ADDR       ( CURR_TEAM_ADDR + CURR_TEAM_SIZE )
+#define TEAMMEM_LOCK_ADDR       ( CURR_TEAM_ADDR + CURR_TEAM_SIZE + 0x4)
 #define TEAMMEM_LOCK            ( (omp_lock_t *) (TEAMMEM_LOCK_ADDR) )
 #define TEAMMEM_LOCK_SIZE       ( SIZEOF_PTR)
 #define TEAMMEM_LOCK_WAIT()     gomp_hal_lock( TEAMMEM_LOCK )
