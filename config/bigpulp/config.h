@@ -19,8 +19,8 @@
 #define SIZEOF_PTR              ( 0x04U )
 #define SIZEOF_INT              ( 0x04U )
 #define SIZEOF_WORD             ( 0x04U )
-#define LIBGOMP_LBASE           ( PULP_BASE_ADDR )
-#define LIBGOMP_BASE            ( PULP_BASE_REMOTE_ADDR )
+#define LIBGOMP_LBASE           ( ARCHI_CLUSTER_ADDR )
+#define LIBGOMP_BASE            ( ARCHI_CLUSTER_GLOBAL_ADDR(0) )
 #define CLUSTER_OFFSET          ( ARCHI_CLUSTER_SIZE )
 
 /* Maximum number of clusters supported */

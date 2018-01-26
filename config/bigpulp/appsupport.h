@@ -101,19 +101,19 @@ get_cluster_base( uint32_t cid )
 	switch( cid )
 	{
 		case 0x0U:
-			ret = PULP_BASE_REMOTE_ADDR + PULP_CLUSTER_SIZE * 0x0;
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x0;
       break;
 		case 0x1U:
-			ret = PULP_BASE_REMOTE_ADDR + PULP_CLUSTER_SIZE * 0x1;		
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x1;		
       break;
 		case 0x2U:
-			ret = PULP_BASE_REMOTE_ADDR + PULP_CLUSTER_SIZE * 0x2;
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x2;
       break;
 		case 0x3U:
-			ret = PULP_BASE_REMOTE_ADDR + PULP_CLUSTER_SIZE * 0x3;
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x3;
       break;
 		default:
-			ret = PULP_BASE_REMOTE_ADDR + PULP_CLUSTER_SIZE * 0x0;
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x0;
       break;
 	}
 	return ret;
@@ -126,19 +126,19 @@ get_cluster_offset( uint32_t cid )
   switch( cid )
   {
     case 0x0U:
-      ret = PULP_CLUSTER_SIZE * 0x0;
+      ret = ARCHI_CLUSTER_SIZE * 0x0;
       break;
     case 0x1U:
-      ret = PULP_CLUSTER_SIZE * 0x1;    
+      ret = ARCHI_CLUSTER_SIZE * 0x1;    
       break;
     case 0x2U:
-      ret = PULP_CLUSTER_SIZE * 0x2;
+      ret = ARCHI_CLUSTER_SIZE * 0x2;
       break;
     case 0x3U:
-      ret = PULP_CLUSTER_SIZE * 0x3;
+      ret = ARCHI_CLUSTER_SIZE * 0x3;
       break;
     default:
-      ret = PULP_CLUSTER_SIZE * 0x0;
+      ret = ARCHI_CLUSTER_SIZE * 0x0;
       break;
   }
   return ret;
