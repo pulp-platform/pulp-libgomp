@@ -21,7 +21,7 @@
 #define SIZEOF_WORD             ( 0x04U )
 #define LIBGOMP_LBASE           ( PULP_BASE_ADDR )
 #define LIBGOMP_BASE            ( PULP_BASE_REMOTE_ADDR )
-#define CLUSTER_OFFSET          ( PULP_CLUSTER_SIZE )
+#define CLUSTER_OFFSET          ( ARCHI_CLUSTER_SIZE )
 
 /* Maximum number of clusters supported */
 #ifndef DEFAULT_MAXCL
