@@ -10,7 +10,11 @@
 
 #include <pulp.h>
 
-#define NUM_HW_BARRIER          ( 0x06U )
+#define NUM_HW_BARRIER          ( 0x04U )
+
+extern char _libgomp_start;
+
+#define LIBGOMP_BASE_ADDR             ((int)&_libgomp_start)
 
 //------------------------------------------------------------
 // Builtin command line parameter defaults
@@ -19,8 +23,8 @@
 #define SIZEOF_PTR              ( 0x04U )
 #define SIZEOF_INT              ( 0x04U )
 #define SIZEOF_WORD             ( 0x04U )
-#define LIBGOMP_LBASE           ( PULP_BASE_ADDR )
-#define LIBGOMP_BASE            ( PULP_BASE_REMOTE_ADDR )
+#define LIBGOMP_LBASE           ( LIBGOMP_BASE_ADDR )
+#define LIBGOMP_BASE            ( LIBGOMP_BASE_ADDR )
 #define CLUSTER_OFFSET          ( PULP_CLUSTER_SIZE )
 
 /* Maximum number of clusters supported */
