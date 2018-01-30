@@ -21,10 +21,10 @@ typedef uint32_t omp_lock_t;
 static inline void
 gomp_hal_lock( omp_lock_t *lock )
 {
-	volatile omp_lock_t *lock_ptr = (volatile omp_lock_t *)( (uint32_t) lock + TEST_AND_SET_OFFSET);
+	volatile omp_lock_t *lock_ptr = (volatile omp_lock_t *)( (uint32_t) lock + (1<<ARCHI_L1_TAS_BIT));
 
 #ifdef OMP_LOCK_DEBUG
-    printf("[%d-%d][gomp_hal_lock] Locking at 0x%x (0x%x, 0x%x) \n", get_proc_id(), get_cl_id(), lock_ptr, lock, TEST_AND_SET_OFFSET);
+    printf("[%d-%d][gomp_hal_lock] Locking at 0x%x (0x%x, 0x%x) \n", get_proc_id(), get_cl_id(), lock_ptr, lock, (1<<ARCHI_L1_TAS_BIT));
 #endif
 
     while (*lock_ptr == BUSY_LOCK);
