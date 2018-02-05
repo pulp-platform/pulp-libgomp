@@ -198,6 +198,5 @@ static void omp_entry()
     
 RT_BOOT_CODE __attribute__((constructor))  void omp_constructor()
 {
-    printf("####Hello!!!!!\n");
-  __rt_cluster_entry =  omp_entry;
+    __rt_cluster_entry =  omp_entry;
 }
