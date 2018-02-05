@@ -43,7 +43,7 @@ gomp_hal_hwTrigg_core( uint32_t cmask )
         printf("[%d][%d][gomp_hal_hwTrigg_core] Trigger %x at 0x%x\n", get_proc_id(), get_cl_id(), cmask, get_hal_addr( get_cl_id(), OFFSET_EVENT0 ));
 #endif
 #else
-	 eu_evt_trig(eu_evt_trig_addr(0), cmask);
+	if (cmask) eu_evt_trig(eu_evt_trig_addr(0), cmask);
 #endif
 }
 
