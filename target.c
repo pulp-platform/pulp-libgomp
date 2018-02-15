@@ -1,33 +1,42 @@
-/* Copyright (C) 2013-2016 Free Software Foundation, Inc.
-   Contributed by Jakub Jelinek <jakub@redhat.com>.
-   This file is part of the GNU Offloading and Multi Processing Library
-   (libgomp).
-   Libgomp is free software; you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
-   Libgomp is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-   more details.
-   Under Section 7 of GPL version 3, you are granted additional
-   permissions described in the GCC Runtime Library Exception, version
-   3.1, as published by the Free Software Foundation.
-   You should have received a copy of the GNU General Public License and
-   a copy of the GCC Runtime Library Exception along with this program;
-   see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-   <http://www.gnu.org/licenses/>.  */
+/*
+ * Copyright (C) 2018 ETH Zurich and University of Bologna
+ * 
+ * Authors: 
+ *    Alessandro Capotondi, UNIBO, (alessandro.capotondi@unibo.it)
+ */
 
-/* Copyright 2014 DEI - Universita' di Bologna
-   author       DEI - Universita' di Bologna
-                Alessandro Capotondi - alessandro.capotondi@unibo.it */
+/* Copyright (C) 2005-2014 Free Software Foundation, Inc.
+ * C ontributed by Richard Henderson <r*th@redhat.com>.
+ * 
+ * This file is part of the GNU OpenMP Library (libgomp).
+ * 
+ * Libgomp is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3, or (at your option)
+ * any later version.
+ * 
+ * Libgomp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ * 
+ * Under Section 7 of GPL version 3, you are granted additional
+ * permissions described in the GCC Runtime Library Exception, version
+ * 3.1, as published by the Free Software Foundation.
+ * 
+ * You should have received a copy of the GNU General Public License and
+ * a copy of the GCC Runtime Library Exception along with this program;
+ * see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
-/* This file contains the support of offloading.  */
+/* This file handles the TARGET construct.  */
 
 #include "libgomp.h"
 
 // #define OMP_TARGET_DEBUG
 
+#ifdef CHIP_HERO_Z_7045
 void
 GOMP_target (int device, void (*fn) (void *), const void *unused,
        size_t mapnum, void **hostaddrs, size_t *sizes,
@@ -279,3 +288,6 @@ int GOMP_pulp_rab_tryread(unsigned int * addr)
 }
 #endif
 #endif
+
+#endif /* CHIP_HERO_Z_7045 */
+

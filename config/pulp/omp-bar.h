@@ -1,9 +1,33 @@
-/* Copyright 2014 DEI - Universita' di Bologna
- *   author       DEI - Universita' di Bologna
- *                Davide Rossi         - davide.rossi@unibo.it
- *                Alessandro Capotondi - alessandro.capotondi@unibo.it
- *   info         Master Slave Software Barriers implementation. */
+/*
+ * Copyright (C) 2018 ETH Zurich and University of Bologna
+ * 
+ * Authors: 
+ *    Alessandro Capotondi, UNIBO, (alessandro.capotondi@unibo.it)
+ */
 
+/* Copyright (C) 2005-2014 Free Software Foundation, Inc.
+ * 
+ * This file is part of the GNU OpenMP Library (libgomp).
+ * 
+ * Libgomp is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3, or (at your option)
+ * any later version.
+ * 
+ * Libgomp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ * 
+ * Under Section 7 of GPL version 3, you are granted additional
+ * permissions described in the GCC Runtime Library Exception, version
+ * 3.1, as published by the Free Software Foundation.
+ * 
+ * You should have received a copy of the GNU General Public License and
+ * a copy of the GCC Runtime Library Exception along with this program;
+ * see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef __OMP_BAR_H__
 #define __OMP_BAR_H__
@@ -54,7 +78,19 @@ gomp_hal_hwTrigg_core( uint32_t cmask )
 static inline void
 gomp_hal_hwTrigg_Team( uint32_t cid )
 {
-
+#if EU_VERSION == 1
+//     *(volatile uint32_t*) ( get_hal_addr( cid, OFFSET_EVENT0 )) = 0x1;
+// #ifdef OMP_BAR_DEBUG
+//         printf("[%d][%d][gomp_hal_hwTrigg_Team] Trigger %x ats 0x%x\n", get_proc_id(), get_cl_id(), 0x1, get_hal_addr( cid, OFFSET_EVENT0 ));
+// #endif
+	*NFLAGS( cid, 0x0U ) = 0x0U;
+	volatile MSGBarrier *rflag = ((volatile MSGBarrier *) ( RFLAGS_BASE( cid )));
+#ifdef OMP_BAR_DEBUG
+	printf("[%d][%d][gomp_hal_hwTrigg_Team] Trigger %x at 0x%x\n", get_proc_id(), get_cl_id(), 0x1, rflag);
+#endif	
+    (*rflag)++;
+#else
+#endif
 }
 
 #endif /*__BAR_H__*/

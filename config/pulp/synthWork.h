@@ -3,7 +3,6 @@
  * 
  * Authors: 
  *    Alessandro Capotondi, UNIBO, (alessandro.capotondi@unibo.it)
- *    Germain Haugou,       ETH,   (germain.haugou@iis.ee.ethz.ch)
  */
 
 /* Copyright (C) 2005-2014 Free Software Foundation, Inc.
@@ -30,13 +29,80 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-/* This is the main OMP header file.  */
+#define __nop { \
+  asm("l.nop"); \
+}
 
-#ifndef __OMP_H__
-#define __OMP_H__
+#define _10_nop_block  { \
+  asm("l.nop"); \
+  asm("l.nop"); \
+  asm("l.nop"); \
+  asm("l.nop"); \
+  asm("l.nop"); \
+  asm("l.nop"); \
+  asm("l.nop"); \
+  asm("l.nop"); \
+  asm("l.nop"); \
+  asm("l.nop"); \
+  }
 
-#define MAIN main
+#define _50_nop_block  { \
+  _10_nop_block \
+  _10_nop_block \
+  _10_nop_block \
+  _10_nop_block \
+  _10_nop_block \
+  }
 
-static inline int omp_get_thread_num() {return 0;}
+#define _100_nop_block  { \
+  _50_nop_block \
+  _50_nop_block \
+  }
 
-#endif /* __OMP_H__ */
+#define _200_nop_block  { \
+  _100_nop_block \
+  _100_nop_block \
+  }
+
+#define _500_nop_block  { \
+  _200_nop_block \
+  _200_nop_block \
+  _100_nop_block \
+  }
+
+#define _1000_nop_block  { \
+  _500_nop_block \
+  _500_nop_block \
+  }
+
+#define _2000_nop_block  { \
+  _1000_nop_block \
+  _1000_nop_block \
+  }
+
+#define _5000_nop_block  { \
+  _2000_nop_block \
+  _2000_nop_block \
+  _1000_nop_block \
+  }
+
+#define _10000_nop_block  { \
+  _5000_nop_block \
+  _5000_nop_block \
+  }
+
+#define _20000_nop_block  { \
+  _10000_nop_block \
+  _10000_nop_block \
+  }
+
+#define _50000_nop_block  { \
+  _10000_nop_block \
+  _20000_nop_block \
+  _20000_nop_block \
+  }
+
+#define _100000_nop_block  { \
+  _50000_nop_block \
+  _50000_nop_block \
+  }

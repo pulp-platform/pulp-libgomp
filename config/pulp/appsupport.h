@@ -1,9 +1,34 @@
-/* Copyright 2014 DEI - Universita' di Bologna
-   author       DEI - Universita' di Bologna
-                Alessandro Capotondi - alessandro.capotondi@unibo.it
-                Germain Haugou - haugoug@iis.ee.ethz.ch
-		Andrea Marongiu - a.marongiu@unibo.it
-   info         Appsupport for PULP */
+/*
+ * Copyright (C) 2018 ETH Zurich and University of Bologna
+ * 
+ * Authors: 
+ *    Alessandro Capotondi, UNIBO, (alessandro.capotondi@unibo.it)
+ *    Germain Haugou,       ETH,   (germain.haugou@iis.ee.ethz.ch)
+ */
+
+/* Copyright (C) 2005-2014 Free Software Foundation, Inc.
+ * 
+ * This file is part of the GNU OpenMP Library (libgomp).
+ * 
+ * Libgomp is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3, or (at your option)
+ * any later version.
+ * 
+ * Libgomp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ * 
+ * Under Section 7 of GPL version 3, you are granted additional
+ * permissions described in the GCC Runtime Library Exception, version
+ * 3.1, as published by the Free Software Foundation.
+ * 
+ * You should have received a copy of the GNU General Public License and
+ * a copy of the GCC Runtime Library Exception along with this program;
+ * see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef __APPSUPPORT_H__
 #define __APPSUPPORT_H__
@@ -89,4 +114,66 @@ void *pulp_l2malloc(int);
 void pulp_l1free(void *);
 void pulp_l2free(void *);
 
+static inline uint32_t
+get_global_num_procs ( )
+{
+  return get_num_clusters( ) * get_num_procs( );
+}
+
+static inline uint32_t
+get_cluster_base( uint32_t cid )
+{
+	uint32_t ret;
+	switch( cid )
+	{
+		case 0x0U:
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x0;
+      break;
+		case 0x1U:
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x1;		
+      break;
+		case 0x2U:
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x2;
+      break;
+		case 0x3U:
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x3;
+      break;
+		default:
+			ret = ARCHI_CLUSTER_GLOBAL_ADDR(0) + ARCHI_CLUSTER_SIZE * 0x0;
+      break;
+	}
+	return ret;
+}
+
+static inline uint32_t
+get_cluster_offset( uint32_t cid )
+{
+  uint32_t ret;
+  switch( cid )
+  {
+    case 0x0U:
+      ret = ARCHI_CLUSTER_SIZE * 0x0;
+      break;
+    case 0x1U:
+      ret = ARCHI_CLUSTER_SIZE * 0x1;    
+      break;
+    case 0x2U:
+      ret = ARCHI_CLUSTER_SIZE * 0x2;
+      break;
+    case 0x3U:
+      ret = ARCHI_CLUSTER_SIZE * 0x3;
+      break;
+    default:
+      ret = ARCHI_CLUSTER_SIZE * 0x0;
+      break;
+  }
+  return ret;
+}
+
+static inline uint32_t
+get_hal_addr( uint32_t cid,
+              uint16_t offset)
+{
+	return get_cluster_base( cid ) + offset;
+}
 #endif // __APPSUPPORT_H__
