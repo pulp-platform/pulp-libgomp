@@ -12,5 +12,6 @@ PULP_CL_CFLAGS_gomp = -Wall -O2 -g ${OMP_CONFIG} -I$(CURDIR)/config/pulp
 header::
 	mkdir -p $(PULP_SDK_HOME)/install/include/libgomp
 	cp *.h $(PULP_SDK_HOME)/install/include/libgomp
+	mkdir -p $(PULP_SDK_HOME)/install/include/libgomp/pulp/
 	cp config/pulp/*.h $(PULP_SDK_HOME)/install/include/libgomp/pulp/
-	
+
