@@ -179,6 +179,7 @@ extern int GOMP_single_start(void);
 extern void *GOMP_single_copy_start(void);
 extern void GOMP_single_copy_end(void *);
 
+#if PULP_CHIP == CHIP_HERO_Z_7045
 /* target.c */
 extern void GOMP_target (int, void (*) (void *), const void *, size_t, void **, size_t *, unsigned char *);
 extern void GOMP_teams (unsigned int, unsigned int);
@@ -191,6 +192,7 @@ extern void GOMP_pulp_RAB_tryread_prefetch(unsigned int *);
 #else
 extern void GOMP_pulp_rab_tryread_slowpath();
 extern int  GOMP_pulp_rab_tryread(unsigned int *);
-#endif
+#endif /* TRYX_LEGACY */
+#endif /* CHIP_HERO_Z_7045 */
 
 #endif  /* __LIBGOMP_H__ */

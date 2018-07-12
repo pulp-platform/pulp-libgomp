@@ -36,7 +36,7 @@
 
 // #define OMP_TARGET_DEBUG
 
-#ifdef CHIP_HERO_Z_7045
+#if PULP_CHIP == CHIP_HERO_Z_7045
 void
 GOMP_target (int device, void (*fn) (void *), const void *unused,
        size_t mapnum, void **hostaddrs, size_t *sizes,
