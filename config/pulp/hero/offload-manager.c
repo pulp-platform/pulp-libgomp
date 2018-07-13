@@ -67,26 +67,22 @@ gomp_offload_manager ( )
     //FIXME this function desnt return yet
     while(1)
     {
-        //FIXME (1) Wait the offload trigger.
-        //while (mailbox_read(&cmd))
-        //{
-            //FIXME
-            //my_sleep(100);
-        //}
+        //(1) Wait the offload trigger.
+        hal_mailbox_read_timed(&cmd), 100);
 
         //FIXME EOC signal RESET used to notify
         // offload execution termination to the host
         //*(volatile int*)(EOC_UNIT_BASE_ADDR) = 0;
 
-        //FIXME (2) The host send throught the mailbox
+        // (2) The host send throught the mailbox
         // the pointer to the function that should
         // be executed on the accelerator
-        //mailbox_read((uint32_t *) &offloadFn);
+        hal_mailbox_read((uint32_t *) &offloadFn);
 
-        //FIXME (3) The host send throught the mailbox
+        // (3) The host send throught the mailbox
         // the pointer to the arguments that should
         // be used
-        //mailbox_read((uint32_t *) &offloadArgs);
+        hal_mailbox_read((uint32_t *) &offloadArgs);
 
         reset_timer();
         start_timer();
