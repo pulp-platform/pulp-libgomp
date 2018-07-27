@@ -31,6 +31,7 @@
 
 #include <stdint.h>
 #include "hal/pulp.h"
+#include "hal/mailbox/mailbox_v0.h"
 
 #include "hero/offload-manager.h"
 
@@ -68,7 +69,7 @@ gomp_offload_manager ( )
     while(1)
     {
         //(1) Wait the offload trigger.
-        hal_mailbox_read_timed(&cmd), 100);
+        hal_mailbox_read_timed(&cmd, 100);
 
         //FIXME EOC signal RESET used to notify
         // offload execution termination to the host

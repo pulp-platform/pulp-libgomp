@@ -36,7 +36,13 @@
 #include "libgomp.h"
 
 /*Application Entry Point*/
+#if PULP_CHIP == CHIP_HERO_Z_7045
+int main(int argc, char **argv, char **envp){
+    return 0;
+}
+#else
 extern int main(int argc, char **argv, char **envp);
+#endif
 
 /* Private vars */
 int _argc;
@@ -97,7 +103,7 @@ omp_SPMD_worker()
         if( get_cl_id() == MASTER_ID )
         {
 
-#if PULP_CHIP == CHIP_BIGPULP_Z_7045_O
+#if PULP_CHIP == CHIP_HERO_Z_7045
             retval = gomp_offload_manager();
 #else
             /* Enter to the application Main */
