@@ -50,12 +50,12 @@ gomp_init_offload_manager ( )
     offload_var_table  = ((void **) __OFFLOAD_TARGET_TABLE__)[2];
     nb_offload_vars  = ((uint32_t)((void **) __OFFLOAD_TARGET_TABLE__)[3] - (uint32_t) ((void **) __OFFLOAD_TARGET_TABLE__)[2]) / 0x4U;
 
-    hal_mailbox_write(TO_RUNTIME | 2);
-    hal_mailbox_write(nb_offload_funcs);
-    hal_mailbox_write(nb_offload_vars);
+    mailbox_write(TO_RUNTIME | 2);
+    mailbox_write(nb_offload_funcs);
+    mailbox_write(nb_offload_vars);
 
     if(nb_offload_funcs) {
-        hal_mailbox_write(TO_RUNTIME | nb_offload_funcs);
+        mailbox_write(TO_RUNTIME | nb_offload_funcs);
 #ifdef OFFLOAD_MANAGER_VERBOSE
         printf("(offload_func_table = %x {", offload_func_table);
 #endif
@@ -63,7 +63,7 @@ gomp_init_offload_manager ( )
 #ifdef OFFLOAD_MANAGER_VERBOSE          
             printf ("func%d: %x, ", i, offload_func_table[i]);
 #endif
-            hal_mailbox_write((uint32_t) offload_func_table[i]);
+            mailbox_write((uint32_t) offload_func_table[i]);
         }
 #ifdef OFFLOAD_MANAGER_VERBOSE
         printf ("\n");
@@ -72,7 +72,7 @@ gomp_init_offload_manager ( )
 
     if(nb_offload_vars)
     {
-        hal_mailbox_write(TO_RUNTIME | 2*nb_offload_vars);
+        mailbox_write(TO_RUNTIME | 2*nb_offload_vars);
 #ifdef OFFLOAD_MANAGER_VERBOSE
         printf("(offload_var_table = %x {", offload_var_table);
 #endif    
@@ -81,8 +81,8 @@ gomp_init_offload_manager ( )
 #ifdef OFFLOAD_MANAGER_VERBOSE
             printf ("var%d: %x size %x,", i, offload_var_table[2*i], offload_var_table[2*i+1]);
 #endif
-            hal_mailbox_write((uint32_t) offload_var_table[2*i]);
-            hal_mailbox_write((uint32_t) offload_var_table[2*i+1]);
+            mailbox_write((uint32_t) offload_var_table[2*i]);
+            mailbox_write((uint32_t) offload_var_table[2*i+1]);
         }
 #ifdef OFFLOAD_MANAGER_VERBOSE
         printf ("\n");
