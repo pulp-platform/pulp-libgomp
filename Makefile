@@ -14,4 +14,6 @@ header::
 	cp *.h $(PULP_SDK_HOME)/install/include/libgomp
 	mkdir -p $(PULP_SDK_HOME)/install/include/libgomp/pulp/
 	cp config/pulp/*.h $(PULP_SDK_HOME)/install/include/libgomp/pulp/
+	mkdir -p $(PULP_SDK_HOME)/install/hero
+	cp -r config/pulp/hero/refs/* $(PULP_SDK_HOME)/install/hero/
 
