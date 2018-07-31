@@ -34,12 +34,6 @@
 
 #include <stdint.h>
 
-#include <hal/pulp.h>
-#include <pulp.h>
-//#include <hwTrace.h>
-//#include <string_lib.h>
-//#include <utils.h>
-
 /* HEADERS */
 #include "config.h"
 
