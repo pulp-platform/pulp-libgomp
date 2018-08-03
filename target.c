@@ -33,6 +33,7 @@
 /* This file handles the TARGET construct.  */
 
 #include "libgomp.h"
+#include "hal/pulp.h" // pulp_tryread_prefetch()
 
 // #define OMP_TARGET_DEBUG
 
@@ -89,205 +90,62 @@ omp_get_num_teams(void)
   return target_desc.nteams;
 }
 
-#if PULP_CHIP == CHIP_BIGPULP_Z_7045_O
-#ifndef TRYX_LEGACY
-/*******************************************************************************/
+#else // PULP_CHIP == CHIP_HERO_Z_7045
 
-void GOMP_pulp_RAB_tryx_slowpath()
+/**
+ * GOMP target wrapper for GCC 7.x.
+ */
+void
+GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
+                 void **hostaddrs, size_t *sizes, unsigned short *kinds,
+                 unsigned int flags, void **depend, void **args)
 {
-  int coreid = get_core_id();
-  unsigned int mask = read_evnt_mask_low(coreid);
+  GOMP_target(device, fn, NULL, mapnum, hostaddrs, sizes, kinds);
+}
 
-  // only listen to wake-up event
-  set_evnt_mask_low(coreid, EVTMASK_RAB_WAKEUP);
+/**
+ * GOMP "fake" target for bigPULP standalone mode. This "fake" target just ensures that the
+ * compiler extension inserting TRYX calls is triggered.
+ */
+void
+GOMP_target (int dev, void (*fn)(void *), void *dev_fn, unsigned int num_args,
+             void *omp_data_arr, void *omp_data_sizes, void *omp_data_kinds)
+{
+  int * data;
+  unsigned int i;
+  int size = 0;
 
-  // go to sleep
-  wait_event();
+  for (i=0; i<num_args; i++) {
+    size += ((int *) omp_data_sizes)[i];
+  }
 
-  // clear RAB miss event buffer
-  clear_evnt_buff_low(EVTMASK_RAB_WAKEUP);
+  data = (int *)l1malloc(size);
 
-  // restore the event mask
-  set_evnt_mask_low(coreid, mask);
+  for (i=0; i<num_args; i++) {
+    int *node = (int *)((int *) omp_data_arr)[i];
+    data[i] = (int)node;
+  }
+
+  // Just execute the TARGET function from the caller
+  fn (data);
+
+  l1free(data);
 
   return;
 }
 
-int GOMP_pulp_RAB_tryread(unsigned int * addr)
-{
-  volatile unsigned int *tryx_ctrl = (unsigned int *)TRYX_CTRL_BASE_ADDR;
-  unsigned int ret;
-   
-#if PROFILE_TRYX == 1
-  int coreid = get_core_id();
-  n_tryx[coreid]++;
-#endif
- 
-#if DEBUG_TRYX == 1
-#pragma omp critical
-  printf("tryread to address 0x%X\n",(unsigned)addr);
-#endif
-   
-  // actual tryread
-  ret = *(volatile unsigned int*)addr;
- 
-  // check for a RAB miss
-  if (*tryx_ctrl & 0x1) {
-  
-#if DEBUG_TRYX == 1
-    printf("miss on address 0x%X\n",(unsigned)addr);
-#endif
+#endif // PULP_CHIP == CHIP_HERO_Z_7045
 
-#if PROFILE_TRYX  == 1  
-    start_core_timer(coreid);
-    n_misses[coreid]++;
-#endif
-         
-    // go to sleep
-    GOMP_pulp_RAB_tryx_slowpath();
- 
-    // repeat tryread
-    ret = *(volatile unsigned int*)addr;
- 
-#if PROFILE_TRYX == 1
-    stop_core_timer(coreid); 
-#endif 
-  }
-  
-  return ret;
+int
+GOMP_pulp_RAB_tryread(unsigned int * addr)
+{
+  return pulp_tryread_prefetch(addr);
 }
 
-void GOMP_pulp_RAB_trywrite(unsigned int * addr, unsigned int value)
+void
+GOMP_pulp_RAB_trywrite(unsigned int * addr, unsigned int value)
 {
-  volatile unsigned int *tryx_ctrl = (unsigned int *)TRYX_CTRL_BASE_ADDR;
- 
-#if PROFILE_TRYX == 1
-  int coreid = get_core_id();
-  n_tryx[coreid]++;
-#endif
-
-#if DEBUG_TRYX == 1
-#pragma omp critical
-  printf("trywrite to address 0x%X\n",(unsigned)addr);
-#endif
- 
-  // actual trywrite
-  *(volatile unsigned int*)addr = value;
-
-  // check for a RAB miss
-  if (*tryx_ctrl & 0x1) {
-
-#if PROFILE_TRYX == 1  
-    start_core_timer(coreid);
-    n_misses[coreid]++;
-#endif
-    
-    // go to sleep
-    GOMP_pulp_RAB_tryx_slowpath();
-
-    // repeat trywrite
-    *(volatile unsigned int*)addr = value;
-
-#if PROFILE_TRYX == 1  
-    stop_core_timer(coreid);
-#endif
-  }
+  pulp_trywrite(addr, value);
 
   return;
 }
-
-void GOMP_pulp_RAB_tryread_prefetch(unsigned int * addr)
-{
-  volatile unsigned int *tryx_ctrl = (unsigned int *)TRYX_CTRL_BASE_ADDR;
-   
-#if PROFILE_TRYX == 1
-  int coreid = get_core_id();
-  n_tryx[coreid]++;
-#endif
- 
-#if DEBUG_TRYX == 1
-#pragma omp critical
-  printf("tryread to address 0x%X\n",(unsigned)addr);
-#endif
-  
-  // trigger prefetch
-  *tryx_ctrl = 0xFFFFFFFF; 
-
-  // actual tryread
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-  const volatile unsigned int ret = *(volatile unsigned int*)addr;
-#pragma GCC diagnostic pop
- 
-  return;
-}
-
-/*******************************************************************************/
-#else // TRYX_LEGACY
-void GOMP_pulp_rab_tryread_slowpath()
-{
-  int coreid = get_core_id();
-
-  // clear RAB miss event buffer 
-  clear_evnt_buff_low(EVTMASK_AXI_RESP);
-
-  // only listen to wake-up event
-  set_evnt_mask_low(coreid, EVTMASK_RAB_WAKEUP_LEGACY);
-
-  // go to sleep
-  wait_event();
-
-  // clear RAB miss event buffer
-  clear_evnt_buff_low(EVTMASK_RAB_WAKEUP_LEGACY);
-
-  return;
-}
-
-int GOMP_pulp_rab_tryread(unsigned int * addr)
-{
- 
-  int coreid = get_core_id();
-  volatile unsigned int ret;
-
-#if PROFILE_TRYX == 1
-  n_tryx[coreid]++;
-#endif
-
-#if DEBUG_TRYX == 1
-  if ( !((unsigned)addr & 0xFFFFF000) ) {
-#pragma omp critical
-    printf("tryread to address 0x%X\n",(unsigned)addr);
-  }
-#endif
-
-  // only listen to axi_resp_event
-  set_evnt_mask_low(coreid, EVTMASK_AXI_RESP);
-
-  // actual try read
-  ret = *addr;
-
-  // check for a RAB miss event
-  if (read_evnt_buff_low(coreid) & EVTMASK_AXI_RESP) {
-
-#if PROFILE_TRYX == 1
-    n_misses[coreid]++;
-    start_core_timer(coreid);
-#endif
-
-    GOMP_pulp_rab_tryread_slowpath();
-
-#if PROFILE_TRYX == 1
-    stop_core_timer(coreid);
-#endif
-  }
-
-  // re-enable barrier
-  set_evnt_mask_low(coreid, EVTMASK_BARRIER);
-
-  return ret;
-}
-#endif
-#endif
-
-#endif /* CHIP_HERO_Z_7045 */
-
