@@ -70,7 +70,7 @@ SECTIONS
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } > L1
+  } > L2
 
   .init_array :
   {
@@ -85,7 +85,7 @@ SECTIONS
     LONG(0)
     __CTOR_END__ = .;
     PROVIDE_HIDDEN (__init_array_end = .);
-  } > L1
+  } > L2
 
   .fini_array :
   {
@@ -100,14 +100,14 @@ SECTIONS
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array ))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } > L1
+  } > L2
 
   .boot :
   {
     . = ALIGN(4);
     *(.boot)
     *(.boot.data)
-  } > L1
+  } > L2
 
   .rodata :
   {
