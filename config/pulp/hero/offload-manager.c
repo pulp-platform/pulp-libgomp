@@ -72,7 +72,10 @@ gomp_offload_manager ( )
         printf("Waiting cmd..\n");
 #endif  
         //(1) Wait the offload trigger.
-        mailbox_read_timed(&cmd, 100);
+        // mailbox_read_timed(&cmd, 100);
+        while (mailbox_read(&cmd)) {
+            __sleep(100);
+        }
 
         // (2) The host send throught the mailbox
         // the pointer to the function that should
@@ -113,5 +116,8 @@ gomp_offload_manager ( )
 #endif        
     }
 
+#ifdef OFFLOAD_MANAGER_VERBOSE
+    printf("bye bye...\n\n\n");
+#endif  
     return 0;
 }
