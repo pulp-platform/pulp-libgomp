@@ -135,18 +135,6 @@ SECTIONS
   {
   } > L1
 
-  .gnu.offload_funcs :
-  {
-    . = ALIGN(4);
-    KEEP(*(.gnu.offload_funcs))
-  } > L1
-
-  .gnu.offload_vars :
-  {
-    . = ALIGN(4);
-    KEEP(*(.gnu.offload_vars))
-  } > L1
-
   .stack :
   {
     . = ALIGN(4);
@@ -169,7 +157,7 @@ SECTIONS
     *(.data_fc_shared.*)
   } > L1
 
-  .data_tiny_l1 (ORIGIN(L1_aliased) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.gnu.offload_funcs) + SIZEOF(.gnu.offload_vars) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared)): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.gnu.offload_funcs) + SIZEOF(.gnu.offload_vars) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared))
+  .data_tiny_l1 (ORIGIN(L1_aliased) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) +  SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared)): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) +  SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared))
   {
     . = ALIGN(4);
     *(.data_tiny_l1)
@@ -178,7 +166,7 @@ SECTIONS
     *(.data_alias_l1.*)
   } > L1_aliased
 
-  .tls (ADDR(.data_tiny_l1) + SIZEOF(.data_tiny_l1)): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.gnu.offload_funcs) + SIZEOF(.gnu.offload_vars) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1))
+  .tls (ADDR(.data_tiny_l1) + SIZEOF(.data_tiny_l1)): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1))
   {
     . = ALIGN(4);
     _tls_start = .;
@@ -188,14 +176,14 @@ SECTIONS
     _tls_end = .;
   } > L1_aliased
 
-  .heapsram (ADDR(.tls) + SIZEOF(.tls) * __NB_ACTIVE_PE): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.gnu.offload_funcs) + SIZEOF(.gnu.offload_vars) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1) + SIZEOF(.tls) * __NB_ACTIVE_PE)
+  .heapsram (ADDR(.tls) + SIZEOF(.tls) * __NB_ACTIVE_PE): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1) + SIZEOF(.tls) * __NB_ACTIVE_PE)
   {
     . = ALIGN(4);
     *(.heapsram)
     *(.heapsram.*)
   } > L1_aliased
 
-  .l1cluster_g (ADDR(.data_fc_shared) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1) + SIZEOF(.tls) * __NB_ACTIVE_PE + SIZEOF(.heapsram)): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.gnu.offload_funcs) + SIZEOF(.gnu.offload_vars) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1) + SIZEOF(.tls) * __NB_ACTIVE_PE + SIZEOF(.heapsram))
+  .l1cluster_g (ADDR(.data_fc_shared) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1) + SIZEOF(.tls) * __NB_ACTIVE_PE + SIZEOF(.heapsram)): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1) + SIZEOF(.tls) * __NB_ACTIVE_PE + SIZEOF(.heapsram))
   {
     . = ALIGN(4);
     *(.l1cluster_g)
@@ -218,7 +206,7 @@ SECTIONS
 
   _l1_preload_size = SIZEOF(.data_tiny_l1) + SIZEOF(.tls) + SIZEOF(.heapsram) + SIZEOF(.l1cluster_g);
 
-  .bss_l1 (ADDR(.l1cluster_g) + SIZEOF(.l1cluster_g)): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.gnu.offload_funcs) + SIZEOF(.gnu.offload_vars) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1) + SIZEOF(.tls) * __NB_ACTIVE_PE + SIZEOF(.heapsram) + SIZEOF(.l1cluster_g))
+  .bss_l1 (ADDR(.l1cluster_g) + SIZEOF(.l1cluster_g)): AT(ADDR(.l1FcTiny) + SIZEOF(.l1FcTiny) + SIZEOF(.data_tiny_fc) + SIZEOF(.init) + SIZEOF(.fini) + SIZEOF(.preinit_array) + SIZEOF(.init_array) + SIZEOF(.fini_array) + SIZEOF(.boot) + SIZEOF(.got) + SIZEOF(.shbss) + SIZEOF(.talias) + SIZEOF(.stack) + SIZEOF(.data_fc) + SIZEOF(.data_fc_shared) + SIZEOF(.data_tiny_l1) + SIZEOF(.tls) * __NB_ACTIVE_PE + SIZEOF(.heapsram) + SIZEOF(.l1cluster_g))
   {
     . = ALIGN(4);
     *(.bss_l1)
@@ -232,6 +220,8 @@ SECTIONS
     . = ALIGN(4);
     sdata  =  .;
     _sdata  =  .;
+    KEEP(*(.gnu.offload_funcs));
+    KEEP(*(.gnu.offload_vars));
     *(.data);
     *(.data.*)
     *(.sdata);
