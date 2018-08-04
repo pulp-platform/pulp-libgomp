@@ -49,34 +49,29 @@ gomp_init_offload_manager ( )
     nb_offload_funcs = ((uint32_t)((void **) __OFFLOAD_TARGET_TABLE__)[1] - (uint32_t) ((void **) __OFFLOAD_TARGET_TABLE__)[0]) / 0x4U;
     offload_var_table  = ((void **) __OFFLOAD_TARGET_TABLE__)[2];
     nb_offload_vars  = ((uint32_t)((void **) __OFFLOAD_TARGET_TABLE__)[3] - (uint32_t) ((void **) __OFFLOAD_TARGET_TABLE__)[2]) / 0x4U;
-
-#ifdef OFFLOAD_MANAGER_VERBOSE
-    printf("nb_offload_funcs = %d\n", nb_offload_funcs);
-    printf("nb_offload_vars = %d\n", nb_offload_vars);
-printf("__OFFLOAD_TARGET_TABLE__[0] = %x\n", (uint32_t)__OFFLOAD_TARGET_TABLE__[0]);
-printf("__OFFLOAD_TARGET_TABLE__[1] = %x\n",(uint32_t)__OFFLOAD_TARGET_TABLE__[1]);
-printf("__OFFLOAD_TARGET_TABLE__[2] = %x\n",(uint32_t)__OFFLOAD_TARGET_TABLE__[2]);
-printf("__OFFLOAD_TARGET_TABLE__[3] = %x\n",(uint32_t)__OFFLOAD_TARGET_TABLE__[3]);
-
-#endif
        
     mailbox_write(TO_RUNTIME | 2);
     mailbox_write(nb_offload_funcs);
     mailbox_write(nb_offload_vars);
 
+#ifdef OFFLOAD_MANAGER_VERBOSE
+    printf("nb_offload_funcs = %d {", nb_offload_funcs);
+    printf("nb_offload_vars = %d {", nb_offload_vars);
+#endif
+
     if(nb_offload_funcs) {
         mailbox_write(TO_RUNTIME | nb_offload_funcs);
 #ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("(offload_func_table = %d {", offload_func_table);
+        printf("(offload_func_table = %x {", offload_func_table);
 #endif
         for(i = 0; i < nb_offload_funcs; i++){
 #ifdef OFFLOAD_MANAGER_VERBOSE          
-            printf ("func%d: %d, ", i, offload_func_table[i]);
+            printf ("func%d: %x, ", i, offload_func_table[i]);
 #endif
             mailbox_write((uint32_t) offload_func_table[i]);
         }
 #ifdef OFFLOAD_MANAGER_VERBOSE
-        printf ("\n");
+        printf ("})\n");
 #endif
     }
 
@@ -95,7 +90,7 @@ printf("__OFFLOAD_TARGET_TABLE__[3] = %x\n",(uint32_t)__OFFLOAD_TARGET_TABLE__[3
             mailbox_write((uint32_t) offload_var_table[2*i+1]);
         }
 #ifdef OFFLOAD_MANAGER_VERBOSE
-        printf ("\n");
+        printf ("\n})");
 #endif
     }
 

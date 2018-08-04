@@ -68,32 +68,44 @@ gomp_offload_manager ( )
     //FIXME this function desnt return yet
     while(1)
     {
+#ifdef OFFLOAD_MANAGER_VERBOSE
+        printf("Waiting cmd..\n");
+#endif  
         //(1) Wait the offload trigger.
         mailbox_read_timed(&cmd, 100);
-
-        //FIXME EOC signal RESET used to notify
-        // offload execution termination to the host
-        //*(volatile int*)(EOC_UNIT_BASE_ADDR) = 0;
 
         // (2) The host send throught the mailbox
         // the pointer to the function that should
         // be executed on the accelerator
         mailbox_read((uint32_t *) &offloadFn);
+#ifdef OFFLOAD_MANAGER_VERBOSE
+        printf("mailbox_read: tgt_fn\n");
+        printf("%x\n",(uint32_t)offloadFn);
+#endif
+        if((uint32_t) offloadFn == 0xdeadbeef)
+            break;
 
         // (3) The host send throught the mailbox
         // the pointer to the arguments that should
         // be used
         mailbox_read((uint32_t *) &offloadArgs);
-
+#ifdef OFFLOAD_MANAGER_VERBOSE
+        printf("mailbox_read: tgt_vars\n");
+        printf("%x\n",(uint32_t)offloadArgs);
+#endif
         reset_timer();
         start_timer();
         
         // (4) Execute the Offloaded Function!!!
+#ifdef OFFLOAD_MANAGER_VERBOSE
+        printf("execute tgt_fn...\n");
+#endif
         offloadFn(offloadArgs);
-        
-        //FIXME EOC signal NOTIFY used to notify
-        // offload execution termination to the host
-        //*(volatile int*)(EOC_UNIT_BASE_ADDR) = 1;
+#ifdef OFFLOAD_MANAGER_VERBOSE
+        printf("execute tgt_fn done!\n");
+#endif        
+        mailbox_write(TO_RUNTIME | 1);
+        mailbox_write(PULP_DONE);
         stop_timer();
 
 #ifdef OFFLOAD_MANAGER_VERBOSE
