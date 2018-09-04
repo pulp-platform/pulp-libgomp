@@ -57,18 +57,18 @@ gomp_init_offload_manager ( )
     mailbox_write(nb_offload_vars);
 
 #ifdef OFFLOAD_MANAGER_VERBOSE
-    printf("nb_offload_funcs = %d {", nb_offload_funcs);
-    printf("nb_offload_vars = %d {", nb_offload_vars);
+    printf("nb_offload_funcs = %d {", (int)nb_offload_funcs);
+    printf("nb_offload_vars = %d {", (int)nb_offload_vars);
 #endif
 
     if(nb_offload_funcs) {
         mailbox_write(TO_RUNTIME | nb_offload_funcs);
 #ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("(offload_func_table = %x {", offload_func_table);
+        printf("(offload_func_table = 0x%x {", (unsigned int)offload_func_table);
 #endif
         for(i = 0; i < nb_offload_funcs; i++){
 #ifdef OFFLOAD_MANAGER_VERBOSE          
-            printf ("func%d: %x, ", i, offload_func_table[i]);
+            printf ("func%d: 0x%x, ", (int)i, (unsigned int)offload_func_table[i]);
 #endif
             mailbox_write((uint32_t) offload_func_table[i]);
         }
@@ -81,12 +81,12 @@ gomp_init_offload_manager ( )
     {
         mailbox_write(TO_RUNTIME | 2*nb_offload_vars);
 #ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("(offload_var_table = %x {", offload_var_table);
+        printf("(offload_var_table = 0x%x {", (unsigned int)offload_var_table);
 #endif    
         for(i = 0; i < nb_offload_vars; i++)
         {
 #ifdef OFFLOAD_MANAGER_VERBOSE
-            printf ("var%d: %x size %x,", i, offload_var_table[2*i], offload_var_table[2*i+1]);
+            printf ("var%d: 0x%x size 0x%x,", (int)i, (unsigned int)offload_var_table[2*i], (unsigned int)offload_var_table[2*i+1]);
 #endif
             mailbox_write((uint32_t) offload_var_table[2*i]);
             mailbox_write((uint32_t) offload_var_table[2*i+1]);

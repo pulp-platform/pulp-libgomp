@@ -58,7 +58,7 @@ gomp_offload_manager ( )
     //FIXME Note that the offload at the moment use several time the mailbox.
     // We should compact the offload descriptor and just sent a pointer to
     // that descriptor.
-    uint32_t cmd = NULL;
+    uint32_t cmd = (uint32_t)NULL;
 
     // Offloaded function pointer and arguments
     void (*offloadFn)(void **) = NULL;
@@ -76,10 +76,10 @@ gomp_offload_manager ( )
         // (2) The host send throught the mailbox
         // the pointer to the function that should
         // be executed on the accelerator
-        mailbox_read((uint32_t *) &offloadFn);
+        mailbox_read((unsigned int *)&offloadFn);
 #ifdef OFFLOAD_MANAGER_VERBOSE
         printf("mailbox_read: tgt_fn\n");
-        printf("%x\n",(uint32_t)offloadFn);
+        printf("0x%x\n",(unsigned int)offloadFn);
 #endif
         if((uint32_t) offloadFn == 0xdeadbeef)
             break;
@@ -87,10 +87,10 @@ gomp_offload_manager ( )
         // (3) The host send throught the mailbox
         // the pointer to the arguments that should
         // be used
-        mailbox_read((uint32_t *) &offloadArgs);
+        mailbox_read((unsigned int *)&offloadArgs);
 #ifdef OFFLOAD_MANAGER_VERBOSE
         printf("mailbox_read: tgt_vars\n");
-        printf("%x\n",(uint32_t)offloadArgs);
+        printf("0x%x\n",(unsigned int)offloadArgs);
 #endif
         reset_timer();
         start_timer();
