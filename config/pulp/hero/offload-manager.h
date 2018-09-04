@@ -32,6 +32,8 @@
 #ifndef __OFFLOAD_MANAGER_H__
 #define __OFFLOAD_MANAGER_H__
 
+#include "hal/mailbox/mailbox_v0.h"
+
 extern void** offload_func_table;
 extern uint32_t nb_offload_funcs;
 extern void** offload_var_table;

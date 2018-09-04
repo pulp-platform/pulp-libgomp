@@ -31,7 +31,6 @@
 
 #include <stdint.h>
 #include "hal/pulp.h"
-#include "hal/mailbox/mailbox_v0.h"
 
 #include "hero/offload-manager.h"
 
@@ -72,10 +71,7 @@ gomp_offload_manager ( )
         printf("Waiting cmd..\n");
 #endif  
         //(1) Wait the offload trigger.
-        // mailbox_read_timed(&cmd, 100);
-        while (mailbox_read(&cmd)) {
-            __sleep(100);
-        }
+        mailbox_read((unsigned int *)&cmd);
 
         // (2) The host send throught the mailbox
         // the pointer to the function that should
