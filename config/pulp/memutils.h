@@ -36,8 +36,7 @@
 #include <stdint.h>
 #include <rt/rt_alloc.h>
 
-static inline void * l1malloc(size_t size)
-{
+static inline void * l1malloc(size_t size){
   void * ptr = rt_alloc(RT_ALLOC_CL_DATA, size + 0x4U);
   if ((uint32_t) ptr == 0x0)
     return (void *) 0x0;
@@ -45,21 +44,29 @@ static inline void * l1malloc(size_t size)
   return (void *) ((uint32_t *)ptr++);
 }
 
-static inline void l1free(void *ptr)
-{
+static inline void l1free(void *ptr){
   uint32_t size = *((uint32_t *)ptr--);
   rt_free(RT_ALLOC_CL_DATA, (void *)((uint32_t *)ptr--), size);
 }
 
-static inline void *
-shmalloc(uint32_t size)
-{
+static inline void * l2malloc(size_t size){
+  void * ptr = rt_alloc(RT_ALLOC_L2_CL_DATA, size + 0x4U);
+  if ((uint32_t) ptr == 0x0)
+    return (void *) 0x0;
+  *(uint32_t *)(ptr) = size + 0x4U;
+  return (void *) ((uint32_t *)ptr++);
+}
+
+static inline void l2free(void *ptr){
+  uint32_t size = *((uint32_t *)ptr--);
+  rt_free(RT_ALLOC_L2_CL_DATA, (void *)((uint32_t *)ptr--), size);
+}
+
+static inline void * shmalloc(uint32_t size){
   return l1malloc(size); 
 }
 
-static inline void
-shfree(void *address)
-{
+static inline void shfree(void *address){
   l1free(address);
 }
 
