@@ -1,28 +1,28 @@
 /*
  * Copyright (C) 2018 ETH Zurich and University of Bologna
- * 
- * Authors: 
+ *
+ * Authors:
  *    Alessandro Capotondi, UNIBO, (alessandro.capotondi@unibo.it)
  */
 
 /* Copyright (C) 2005-2014 Free Software Foundation, Inc.
- * 
+ *
  * This file is part of the GNU OpenMP Library (libgomp).
- * 
+ *
  * Libgomp is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3, or (at your option)
  * any later version.
- * 
+ *
  * Libgomp is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- * 
+ *
  * Under Section 7 of GPL version 3, you are granted additional
  * permissions described in the GCC Runtime Library Exception, version
  * 3.1, as published by the Free Software Foundation.
- * 
+ *
  * You should have received a copy of the GNU General Public License and
  * a copy of the GCC Runtime Library Exception along with this program;
  * see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
@@ -63,57 +63,51 @@ gomp_offload_manager ( )
     // Offloaded function pointer and arguments
     void (*offloadFn)(void **) = NULL;
     void **offloadArgs = NULL;
-    
-    //FIXME this function desnt return yet
-    while(1)
-    {
-#ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("Waiting cmd..\n");
-#endif  
-        //(1) Wait the offload trigger.
+
+    int cycles = 0;
+
+    while(1) {
+        if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
+            printf("Waiting for command...\n");
+
+        // (1) Wait for the offload trigger.
         mailbox_read((unsigned int *)&cmd);
-
-        // (2) The host send throught the mailbox
-        // the pointer to the function that should
-        // be executed on the accelerator
-        mailbox_read((unsigned int *)&offloadFn);
-#ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("mailbox_read: tgt_fn\n");
-        printf("0x%x\n",(unsigned int)offloadFn);
-#endif
-        if((uint32_t) offloadFn == 0xdeadbeef)
+        if (PULP_STOP == cmd) {
+            if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
+                printf("Got PULP_STOP from host, stopping execution now.");
             break;
+        }
 
-        // (3) The host send throught the mailbox
-        // the pointer to the arguments that should
-        // be used
+        // (2) The host sends through the mailbox the pointer to the function that should be
+        // executed on the accelerator.
+        mailbox_read((unsigned int *)&offloadFn);
+
+        if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
+            printf("tgt_fn @ 0x%x\n",(unsigned int)offloadFn);
+
+        // (3) The host sends through the mailbox the pointer to the arguments that should
+        // be used.
         mailbox_read((unsigned int *)&offloadArgs);
-#ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("mailbox_read: tgt_vars\n");
-        printf("0x%x\n",(unsigned int)offloadArgs);
-#endif
+
+        if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
+            printf("tgt_vars @ 0x%x\n",(unsigned int)offloadArgs);
+
         reset_timer();
         start_timer();
-        
-        // (4) Execute the Offloaded Function!!!
-#ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("execute tgt_fn...\n");
-#endif
-        offloadFn(offloadArgs);
-#ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("execute tgt_fn done!\n");
-#endif        
-        mailbox_write(TO_RUNTIME | 1);
-        mailbox_write(PULP_DONE);
-        stop_timer();
 
-#ifdef OFFLOAD_MANAGER_VERBOSE
-        printf("+->pulp kernel   [PULP cycles] = %d\n", get_time());
-#endif        
+        // (4) Execute the offloaded function.
+        offloadFn(offloadArgs);
+
+        stop_timer();
+        cycles = get_time();
+
+        mailbox_write(TO_RUNTIME | 2);
+        mailbox_write(PULP_DONE);
+        mailbox_write(cycles);
+
+        if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
+            printf("Kernel execution time [PULP cycles] = %d\n", cycles);
     }
 
-#ifdef OFFLOAD_MANAGER_VERBOSE
-    printf("bye bye...\n\n\n");
-#endif  
     return 0;
 }
