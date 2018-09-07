@@ -31,6 +31,7 @@
 
 #include <stdint.h>
 #include "hal/pulp.h"
+#include "vmm/vmm.h"
 
 #include "hero/offload-manager.h"
 
@@ -92,10 +93,15 @@ gomp_offload_manager ( )
         if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
             printf("tgt_vars @ 0x%x\n",(unsigned int)offloadArgs);
 
+        // (4) Ensure access to offloadArgs. It might be in SVM.
+        unsigned tmp = pulp_tryread_prefetch((unsigned int *)offloadArgs);
+        if (tmp)
+            map_page((void *)offloadArgs);
+
         reset_timer();
         start_timer();
 
-        // (4) Execute the offloaded function.
+        // (5) Execute the offloaded function.
         offloadFn(offloadArgs);
 
         stop_timer();
