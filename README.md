@@ -1,2 +1,2 @@
-# PULP Libgomp
-PULP custom OpenMP runtime based on GCC Libgomp.
+# pulp-libgomp
+Lightweight OpenMP RTE based on libgomp. Bare-metal runtime, optimized for PULP-based systems.
