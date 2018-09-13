@@ -48,6 +48,27 @@ target_register_lib (const void *target_table)
     return;
 }
 
+// Shrinked gomp_team_t descriptor
+typedef struct offload_rab_miss_handler_desc_s
+{
+    void (*omp_task_f) (void *data);
+    void *omp_args;
+    uint32_t barrier_id;
+} offload_rab_miss_handler_desc_t;
+
+
+void
+offload_rab_misses_handler(uint32_t *status)
+{
+    if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
+        rt_debug("offload_rab_misses_handler: synch @%p (0x%x)\n", status, *(volatile unsigned int *) status);
+    do {
+        handle_rab_misses();
+    } while (*((volatile uint32_t *) status) != 0xdeadbeefU);
+    if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
+        rt_debug("offload_rab_misses_handler: synch @%p (0x%x)\n", status, *(volatile unsigned int *) status);
+}
+
 int
 gomp_offload_manager ( )
 {
@@ -65,6 +86,9 @@ gomp_offload_manager ( )
     // Offloaded function pointer and arguments
     void (*offloadFn)(void **) = NULL;
     void **offloadArgs = NULL;
+    int nbOffloadRabMissHandlers = 0x0;
+    uint32_t offload_rab_miss_sync = 0x0U;
+    offload_rab_miss_handler_desc_t rab_miss_handler = {(void (*) (void *)) offload_rab_misses_handler, (void *) &offload_rab_miss_sync, 0x2U};
 
     int cycles = 0;
     rab_miss_t rab_miss;
@@ -72,13 +96,13 @@ gomp_offload_manager ( )
 
     while(1) {
         if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
-            printf("Waiting for command...\n");
+            rt_debug("Waiting for command...\n");
 
         // (1) Wait for the offload trigger.
         mailbox_read((unsigned int *)&cmd);
         if (PULP_STOP == cmd) {
             if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
-                printf("Got PULP_STOP from host, stopping execution now.");
+                rt_debug("Got PULP_STOP from host, stopping execution now.\n");
             break;
         }
 
@@ -87,28 +111,41 @@ gomp_offload_manager ( )
         mailbox_read((unsigned int *)&offloadFn);
 
         if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
-            printf("tgt_fn @ 0x%x\n",(unsigned int)offloadFn);
+            rt_debug("tgt_fn @ 0x%x\n",(unsigned int)offloadFn);
 
         // (3) The host sends through the mailbox the pointer to the arguments that should
         // be used.
         mailbox_read((unsigned int *)&offloadArgs);
 
         if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
-            printf("tgt_vars @ 0x%x\n",(unsigned int)offloadArgs);
+            rt_debug("tgt_vars @ 0x%x\n",(unsigned int)offloadArgs);
+
+        // (3b) The host sends through the mailbox the number of rab misses handlers threads
+        mailbox_read((unsigned int *)&nbOffloadRabMissHandlers);
+
+        if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
+            rt_debug("nbOffloadRabMissHandlers %d\n", nbOffloadRabMissHandlers);
+
+        // (3c) Spawing nbOffloadRabMissHandlers
+        nbOffloadRabMissHandlers = nbOffloadRabMissHandlers < rt_nb_pe()-1 ? nbOffloadRabMissHandlers : rt_nb_pe()-1;
+        if(nbOffloadRabMissHandlers) {
+            offload_rab_miss_sync = 0x0U;
+            for(int pid = rt_nb_pe()-1, i = nbOffloadRabMissHandlers; i > 0; i--, pid--){
+                gomp_set_curr_team(pid, (gomp_team_t *) &rab_miss_handler);
+                gomp_hal_hwTrigg_core( 0x1U << pid);
+            }
+            gomp_atomic_del_thread_pool_idle_cores(nbOffloadRabMissHandlers);   
+        }
 
         // (4) Ensure access to offloadArgs. It might be in SVM.
-        unsigned tmp = pulp_tryread_prefetch((unsigned int *)offloadArgs);
-        if (tmp) {
-            map_page((void *)offloadArgs);
-            get_rab_miss(&rab_miss);
-        }
+        if(offloadArgs!=NULL)
+            pulp_tryread((unsigned int *)offloadArgs);
 
         reset_timer();
         start_timer();
 
         // (5) Execute the offloaded function.
         offloadFn(offloadArgs);
-
         stop_timer();
         cycles = get_time();
 
@@ -117,8 +154,14 @@ gomp_offload_manager ( )
         mailbox_write(cycles);
 
         if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
-            printf("Kernel execution time [PULP cycles] = %d\n", cycles);
+            rt_debug("Kernel execution time [PULP cycles] = %d\n", cycles);
+
+        if(nbOffloadRabMissHandlers) {
+            offload_rab_miss_sync = 0xdeadbeefU;
+            gomp_atomic_add_thread_pool_idle_cores(nbOffloadRabMissHandlers);
+        }
     }
 
     return 0;
 }
+

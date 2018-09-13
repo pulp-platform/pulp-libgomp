@@ -116,6 +116,7 @@ typedef struct gomp_team_s
      * in the team must run upon launch. */
     void (*omp_task_f) (void *data);
     void *omp_args;
+    uint32_t barrier_id;
     
     /* Nesting level.  */
     unsigned level;
@@ -136,9 +137,7 @@ typedef struct gomp_team_s
     /* This is the task that the thread is currently executing.  */
     /* Team (parreg) specific locks */
     omp_lock_t critical_lock;
-    omp_lock_t atomic_lock;
-    uint32_t barrier_id;
-    
+    omp_lock_t atomic_lock;    
     gomp_work_share_t root_ws;
     
 #ifdef OMP_NOWAIT_SUPPORT
@@ -234,8 +233,6 @@ gomp_data_t gomp_data __attribute__((section(".libgomp")));
 #else
 #define CURR_WS(pid)            ( ((gomp_team_t *) CURR_TEAM(pid))->work_share )
 #endif
-
-// #define OMP_LIBGOMP_DEBUG
 
 /*** Gloabal Threads Pool APIs ***/
 ALWAYS_INLINE void
