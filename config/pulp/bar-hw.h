@@ -121,7 +121,7 @@ MSGBarrier_hwSlaveEnter( uint32_t barrier_id)
 #if EU_VERSION == 1
     gomp_hal_wait_hwBarrier_buff( barrier_id );
 #else
-    gomp_hal_wait_hwBarrier_buff(barrier_id);
+    if ((int32_t)barrier_id>0) gomp_hal_wait_hwBarrier_buff(barrier_id);
     gomp_hal_wait_hwEvent_buff( );
 #endif
 }

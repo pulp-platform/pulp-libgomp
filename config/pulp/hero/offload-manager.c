@@ -53,7 +53,7 @@ typedef struct offload_rab_miss_handler_desc_s
 {
     void (*omp_task_f) (void *data);
     void *omp_args;
-    uint32_t barrier_id;
+    int barrier_id;
 } offload_rab_miss_handler_desc_t;
 
 
@@ -88,7 +88,7 @@ gomp_offload_manager ( )
     void **offloadArgs = NULL;
     int nbOffloadRabMissHandlers = 0x0;
     uint32_t offload_rab_miss_sync = 0x0U;
-    offload_rab_miss_handler_desc_t rab_miss_handler = {(void (*) (void *)) offload_rab_misses_handler, (void *) &offload_rab_miss_sync, 0x2U};
+    offload_rab_miss_handler_desc_t rab_miss_handler = {(void (*) (void *)) offload_rab_misses_handler, (void *) &offload_rab_miss_sync, -1};
 
     int cycles = 0;
     rab_miss_t rab_miss;
@@ -131,6 +131,8 @@ gomp_offload_manager ( )
         if(nbOffloadRabMissHandlers) {
             offload_rab_miss_sync = 0x0U;
             for(int pid = rt_nb_pe()-1, i = nbOffloadRabMissHandlers; i > 0; i--, pid--){
+                if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
+                    rt_debug("waking up RAB miss handler %d\n", pid);
                 gomp_set_curr_team(pid, (gomp_team_t *) &rab_miss_handler);
                 gomp_hal_hwTrigg_core( 0x1U << pid);
             }
