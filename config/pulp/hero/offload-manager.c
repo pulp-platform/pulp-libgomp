@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include "hal/pulp.h"
 #include "vmm/vmm.h"
+#include "hal/rab/rab_v1.h"
 
 #include "hero/offload-manager.h"
 
@@ -66,6 +67,8 @@ gomp_offload_manager ( )
     void **offloadArgs = NULL;
 
     int cycles = 0;
+    rab_miss_t rab_miss;
+    reset_vmm();
 
     while(1) {
         if (DEBUG_LEVEL_OFFLOAD_MANAGER > 0)
@@ -95,8 +98,10 @@ gomp_offload_manager ( )
 
         // (4) Ensure access to offloadArgs. It might be in SVM.
         unsigned tmp = pulp_tryread_prefetch((unsigned int *)offloadArgs);
-        if (tmp)
+        if (tmp) {
             map_page((void *)offloadArgs);
+            get_rab_miss(&rab_miss);
+        }
 
         reset_timer();
         start_timer();
