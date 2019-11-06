@@ -34,10 +34,6 @@
 #include "libgomp.h"
 
 /* SOURCES */
-#if PULP_CHIP == CHIP_HERO_Z_7045
-#include "hero/offload-manager.c"
-#endif
-
 #include "barrier.c"
 #include "iter.c"                
 #include "work.c"
