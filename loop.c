@@ -175,3 +175,21 @@ GOMP_loop_end_nowait()
 {
     gomp_loop_end_nowait();
 }
+
+// Stubs for ULL dynamic loop versions
+typedef unsigned long long gomp_ull;
+
+int
+GOMP_loop_ull_dynamic_start(int up, gomp_ull start, gomp_ull end,
+                            gomp_ull incr, gomp_ull chunk_size,
+                            gomp_ull *istart, gomp_ull *iend)
+{
+    return GOMP_loop_dynamic_start((int) start, (int) end, (int) incr,
+                                   (int) chunk_size, (int*) istart, (int*) iend);
+}
+
+int
+GOMP_loop_ull_dynamic_next(gomp_ull *istart, gomp_ull *iend)
+{
+    return GOMP_loop_dynamic_next((int*) istart, (int*) iend);
+}
